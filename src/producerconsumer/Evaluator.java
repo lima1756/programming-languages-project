@@ -29,20 +29,12 @@ public class Evaluator {
         }
         
     }
-    
-    
-    
-    
     public static void main(String [] args)throws Throwable{
         Evaluator e = new Evaluator();
         Scanner sc = new Scanner(System.in);
         while(true){
-            System.out.println(e.eval(sc.nextLine()));
-            
+            System.out.println(e.eval(sc.nextLine()));   
         }
-     
-        
-        
     }
     
 }
