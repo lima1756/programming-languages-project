@@ -761,7 +761,7 @@ public class GUIDesignFrame extends javax.swing.JFrame {
             
             //TODO: validar datos
             
-            Buffer buffer = new Buffer((char)Integer.parseInt(bufferCantidad.getValue().toString()));
+            Buffer buffer = new Buffer(Integer.parseInt(bufferCantidad.getValue().toString()));
         
             Producer producer = new Producer(buffer);
             producer.start();
