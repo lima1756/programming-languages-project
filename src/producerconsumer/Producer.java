@@ -26,7 +26,7 @@ public class Producer extends Thread {
             Buffer.print("Producer produced: " + product);
             
             try {
-                Thread.sleep(1000);
+                Thread.sleep(300);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Producer.class.getName()).log(Level.SEVERE, null, ex);
             }
