@@ -5,28 +5,13 @@ public class ProducerConsumer {
 
     public static void main(String[] args) {
         
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(GUIDesignFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
+        Buffer buffer = new Buffer();
         
-        //</editor-fold>
+        Producer producer = new Producer(buffer);
+        producer.start();
         
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new GUIDesignFrame().setVisible(true);
-            }
-        });
-    
-        
+        Consumer consumer = new Consumer(buffer);
+        consumer.start();
     }
     
 }

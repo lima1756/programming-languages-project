@@ -8,8 +8,8 @@ public class Buffer {
     
     private char buffer;
     
-    Buffer(char buffer) {
-        this.buffer = buffer;
+    Buffer() {
+        this.buffer = 0;
     }
     
     synchronized char consume() {
