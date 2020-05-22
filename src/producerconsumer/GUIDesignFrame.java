@@ -1105,47 +1105,48 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                inputDefault(spinners);
                btn_start.setLabel("Iniciar");
                removeRunningValues();
+               running = !running;
             }
             else {
-                jProgressBar2.setValue(0);
-                DefaultTableModel model1 = (DefaultTableModel) this.jTable1.getModel();
-                model1.setRowCount(0);
-                DefaultTableModel model2 = (DefaultTableModel) this.jTable2.getModel();
-                model2.setRowCount(0);
-                labelTareasCompletadas.setText("0");
-                labelTareasPendientes.setText("0");
-                inputLock(spinners);
-                btn_start.setLabel("Parar");
-                setRunningValues();
-                
-                //TODO: Validar datos
                 int bCantidad = Integer.parseInt(bufferCantidad.getValue().toString());
-                
                 int pCantidad = Integer.parseInt(productorCantidad.getValue().toString());
                 int pEspera = Integer.parseInt(productorEspera.getValue().toString());
-                
                 int cCantidad = Integer.parseInt(consumidorCantidad.getValue().toString());
                 int cEspera = Integer.parseInt(consumidorEspera.getValue().toString());
                 
+                //TODO: Ivan, aqui se reciben los datos de los valores inicial y final
                 int vInicial = Integer.parseInt(valoresInicial.getValue().toString());
                 int vFinal = Integer.parseInt(valoresFinal.getValue().toString());
   
-                Buffer buffer = new Buffer(bCantidad, pEspera, cEspera, this);
-                jProgressBar2.setMaximum(bCantidad);
+                if(bCantidad > 0 && pCantidad > 0 && cCantidad > 0 && pEspera >= 0 && cEspera >= 0) {
+                    jProgressBar2.setValue(0);
+                    DefaultTableModel model1 = (DefaultTableModel) this.jTable1.getModel();
+                    model1.setRowCount(0);
+                    DefaultTableModel model2 = (DefaultTableModel) this.jTable2.getModel();
+                    model2.setRowCount(0);
+                    labelTareasCompletadas.setText("0");
+                    labelTareasPendientes.setText("0");
+                    inputLock(spinners);
+                    btn_start.setLabel("Parar");
+                    setRunningValues();
                 
-                for (int producers = 0; producers < pCantidad; producers++) {
-                    Producer producer = new Producer(buffer, pEspera);
-                    this.producers.add(producer);
-                    producer.start();
-                }
+                    Buffer buffer = new Buffer(bCantidad, pEspera, cEspera, this);
+                    jProgressBar2.setMaximum(bCantidad);
 
-                for (int consumers = 0; consumers < cCantidad; consumers++) {
-                    Consumer consumer = new Consumer(buffer, cEspera);
-                    this.consumers.add(consumer);
-                    consumer.start();
+                    for (int producers = 0; producers < pCantidad; producers++) {
+                        Producer producer = new Producer(buffer, pEspera);
+                        this.producers.add(producer);
+                        producer.start();
+                    }
+
+                    for (int consumers = 0; consumers < cCantidad; consumers++) {
+                        Consumer consumer = new Consumer(buffer, cEspera);
+                        this.consumers.add(consumer);
+                        consumer.start();
+                    }
+                    running = !running;
                 }
             }
-            running = !running;
         }
         else {
             // TODO: hacer la conexion con el servidor
