@@ -5,30 +5,46 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.LinkedList;
 import java.util.Queue;
+import javax.swing.JProgressBar;
+import javax.swing.table.DefaultTableModel;
 
 public class Buffer {
     
     //private char buffer = 0;
     public Queue<Character> theBuffer;
-    private int size;
+    private int size, completadas;
+    private int productorEspera, consumidorEspera;
+    private GUIDesignFrame gui;
     
-    Buffer(int size) {
+    Buffer(int size, int productorEspera, int consumidorEspera, GUIDesignFrame gui) {
         this.size = size;
+        this.completadas = 0;
+        this.productorEspera = productorEspera;
+        this.consumidorEspera = consumidorEspera;
+        this.gui = gui;
         this.theBuffer = new LinkedList<>();
     }
     
     synchronized char consume() {
         char product = 0;
         
-        if(this.theBuffer.isEmpty()) {
+        while(this.theBuffer.isEmpty()) {
             try {
-                wait(1000);
+                wait(this.productorEspera);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Buffer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
         product = this.retrieveProduct();
+        this.completadas++;
+        DefaultTableModel model1 = (DefaultTableModel) gui.jTable1.getModel();
+        model1.removeRow(0);
+        gui.labelTareasPendientes.setText(this.theBuffer.size() + "");
+        DefaultTableModel model2 = (DefaultTableModel) gui.jTable2.getModel();
+        model2.addRow(new Object[]{product, "Test"});
+        gui.jProgressBar2.setValue(this.theBuffer.size());
+        gui.labelTareasCompletadas.setText(this.completadas + "");
         this.printBuffer();
         notify();
         
@@ -37,17 +53,20 @@ public class Buffer {
     
     synchronized void produce(char product) {
         
-        if(bufferIsFull()) { //if buffer is full, then wait a second
+        while(bufferIsFull()) {
             try {
-                wait(1000);
+                wait(this.consumidorEspera);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Buffer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
         this.addProduct(product);
+        DefaultTableModel model = (DefaultTableModel) gui.jTable1.getModel();
+        model.addRow(new Object[]{product});
+        gui.jProgressBar2.setValue(this.theBuffer.size());
+        gui.labelTareasPendientes.setText(this.theBuffer.size() + "");
         this.printBuffer();
-        
         notify();
     }
     

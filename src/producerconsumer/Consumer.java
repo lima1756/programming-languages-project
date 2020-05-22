@@ -6,9 +6,13 @@ import java.util.logging.Logger;
 
 public class Consumer extends Thread {
     Buffer buffer;
+    private int consumidorEspera;
+    private boolean alive;
     
-    Consumer(Buffer buffer) {
+    Consumer(Buffer buffer, int consumidorEspera) {
         this.buffer = buffer;
+        this.consumidorEspera = consumidorEspera;
+        this.alive = true;
     }
     
     @Override
@@ -16,16 +20,20 @@ public class Consumer extends Thread {
         System.out.println("Running Consumer...");
         char product;
         
-        for(int i=0 ; i<5 ; i++) {
+        while(alive) {
             product = this.buffer.consume();
             //System.out.println("Consumer consumed: " + product);
             Buffer.print("Consumer consumed: " + product);
             
             try {
-                Thread.sleep(1000);
+                Thread.sleep(this.consumidorEspera);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Producer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+    
+    public void kill() {
+        this.alive = false;
     }
 }
