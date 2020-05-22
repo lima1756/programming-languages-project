@@ -19,11 +19,13 @@ public class Producer extends Thread {
     @Override
     public void run() {
         System.out.println("Running Producer...");
+        //TODO: Ivan, aqui esta "la materia prima" para producir
         String products = "AEIOU";
         Random r = new Random(System.currentTimeMillis());
         char product;
         
         while(alive) {
+            //TODO: Ivan, aqui se genera el producto en base a la materia prima0
             product = products.charAt(r.nextInt(5));
             this.buffer.produce(product);
             //System.out.println("Producer produced: " + product);
