@@ -14,13 +14,19 @@ import javax.swing.border.Border;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import producerconsumer.inputAnalysis.AnalyzerListener;
+import producerconsumer.inputAnalysis.Lexical;
+import producerconsumer.inputAnalysis.Syntactical;
+import producerconsumer.inputAnalysis.Token;
 
 /**
  *
  * @author luisi
  */
-public class GUIDesignFrame extends javax.swing.JFrame {
+public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListener{
     
     private int xWindowPosition, yWindowPosition;
     private boolean running = false;
@@ -28,6 +34,8 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     private boolean server = true;
     private ArrayList<Producer> producers;
     private ArrayList<Consumer> consumers;
+    private String currentOp;
+    private ArrayList<String> dictionary;
 
     /**
      * Creates new form GUIDesignFrame
@@ -52,6 +60,12 @@ public class GUIDesignFrame extends javax.swing.JFrame {
         }
         producers = new ArrayList<>();
         consumers = new ArrayList<>();
+        dictionary = new ArrayList<>();
+        dictionary.add("(+ _N _N)");
+        dictionary.add("(- _N _N)");
+        dictionary.add("(* _N _N)");
+        dictionary.add("(/ _N _N)"); 
+        updateDictionaryTable();
         startServer();
     }
     
@@ -134,12 +148,12 @@ public class GUIDesignFrame extends javax.swing.JFrame {
         jScrollPane4 = new javax.swing.JScrollPane();
         jTable4 = new javax.swing.JTable();
         jLabel31 = new javax.swing.JLabel();
-        choice1 = new java.awt.Choice();
         jLabel32 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         jLabel33 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
         jButton2 = new javax.swing.JButton();
+        jComboBox1 = new javax.swing.JComboBox<>();
         cardServerClients = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTable3 = new javax.swing.JTable();
@@ -802,7 +816,7 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                 {"(/ N M)"}
             },
             new String [] {
-                "Operaciones Guardadas"
+                "Operaciones"
             }
         ) {
             Class[] types = new Class [] {
@@ -845,6 +859,8 @@ public class GUIDesignFrame extends javax.swing.JFrame {
             }
         });
 
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
         javax.swing.GroupLayout cardServerDictLayout = new javax.swing.GroupLayout(cardServerDict);
         cardServerDict.setLayout(cardServerDictLayout);
         cardServerDictLayout.setHorizontalGroup(
@@ -859,11 +875,11 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                             .addComponent(jLabel33)
                             .addGroup(cardServerDictLayout.createSequentialGroup()
                                 .addGroup(cardServerDictLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jTextField1)
                                     .addGroup(cardServerDictLayout.createSequentialGroup()
                                         .addComponent(jLabel32)
-                                        .addGap(0, 182, Short.MAX_VALUE))
-                                    .addComponent(jTextField1)
-                                    .addComponent(choice1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addGap(0, 0, Short.MAX_VALUE))
+                                    .addComponent(jComboBox1, 0, 236, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(cardServerDictLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jButton1)
@@ -890,7 +906,8 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                             .addGroup(cardServerDictLayout.createSequentialGroup()
                                 .addComponent(jLabel32)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(choice1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(4, 4, 4))))
                     .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 310, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(17, Short.MAX_VALUE))
         );
@@ -1248,7 +1265,10 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_menu_4MousePressed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+        if(dictionary.size() > 4){
+            dictionary.remove(jComboBox1.getSelectedIndex()+4);
+            updateDictionaryTable();
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
@@ -1256,11 +1276,11 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        String preorder = jTextField1.getText().trim();
-        Analyzer anal = new Analyzer(preorder);
+        currentOp = jTextField1.getText().trim();
+        //Analyzer anal = new Analyzer(currentOp);
         
-        if(anal.getResult() == true);
-        else jTextField1.setText("Invalid Format");
+        //if(anal.getResult() == true);
+        //else jTextField1.setText("Invalid Format");
     }//GEN-LAST:event_jButton2ActionPerformed
 
     
@@ -1354,7 +1374,6 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     private javax.swing.JPanel cardServerConfig;
     private javax.swing.JPanel cardServerDict;
     private javax.swing.JPanel cardServerProcess;
-    private java.awt.Choice choice1;
     private javax.swing.JSpinner consumidorCantidad;
     private javax.swing.JSpinner consumidorEspera;
     private javax.swing.JPanel ind_1;
@@ -1363,6 +1382,7 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     private javax.swing.JPanel ind_4;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1431,4 +1451,34 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     private javax.swing.JSpinner valoresFinal;
     private javax.swing.JSpinner valoresInicial;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void passedAnalyzer() {
+        dictionary.add(currentOp);
+        updateDictionaryTable();
+        currentOp = "";
+        jTextField1.setText("");
+    }
+
+    @Override
+    public void errorAnalyzer(Token token) {
+        JOptionPane.showMessageDialog(null, "ERROR on token: " + token.getData());
+    }
+    
+    private void updateDictionaryTable(){
+        DefaultTableModel model = (DefaultTableModel)jTable4.getModel();
+        DefaultComboBoxModel comboModel = (DefaultComboBoxModel)jComboBox1.getModel();
+        int currentSize = model.getRowCount();
+        for(int i = 0; i < currentSize; i++){
+            model.removeRow(0);
+        }
+        comboModel.removeAllElements();
+        for(int i = 0; i < dictionary.size(); i++){
+            Object[] data = {dictionary.get(i)};
+            model.addRow(data);   
+            if(i >= 4)
+                comboModel.addElement(dictionary.get(i));
+        }
+       
+    }
 }
