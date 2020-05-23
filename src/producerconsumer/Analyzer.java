@@ -164,7 +164,7 @@ public class Analyzer {
     }
 
     public void setResult(String operation) {
-        this.result = init(operation);
+        this.result = init(operation.trim());
     }
     
 }
