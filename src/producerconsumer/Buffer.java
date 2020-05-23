@@ -3,42 +3,70 @@ package producerconsumer;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.LinkedList;
+import java.util.Queue;
+import javax.swing.JProgressBar;
+import javax.swing.table.DefaultTableModel;
 
 public class Buffer {
     
-    private char buffer;
+    //private char buffer = 0;
+    public Queue<Character> theBuffer;
+    private int size, completadas;
+    private int productorEspera, consumidorEspera;
+    private GUIDesignFrame gui;
     
-    Buffer(char buffer) {
-        this.buffer = buffer;
+    Buffer(int size, int productorEspera, int consumidorEspera, GUIDesignFrame gui) {
+        this.size = size;
+        this.completadas = 0;
+        this.productorEspera = productorEspera;
+        this.consumidorEspera = consumidorEspera;
+        this.gui = gui;
+        this.theBuffer = new LinkedList<>();
     }
     
     synchronized char consume() {
         char product = 0;
         
-        if(this.buffer == 0) {
+        while(this.theBuffer.isEmpty()) {
             try {
-                wait(1000);
+                wait(this.productorEspera);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Buffer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        product = this.buffer;
-        this.buffer = 0;
+        
+        product = this.retrieveProduct();
+        this.completadas++;
+        DefaultTableModel model1 = (DefaultTableModel) gui.jTable1.getModel();
+        model1.removeRow(0);
+        gui.labelTareasPendientes.setText(this.theBuffer.size() + "");
+        DefaultTableModel model2 = (DefaultTableModel) gui.jTable2.getModel();
+        model2.addRow(new Object[]{product, "Test"});
+        gui.jProgressBar2.setValue(this.theBuffer.size());
+        gui.labelTareasCompletadas.setText(this.completadas + "");
+        this.printBuffer();
         notify();
         
         return product;
     }
     
     synchronized void produce(char product) {
-        if(this.buffer != 0) {
+        
+        while(bufferIsFull()) {
             try {
-                wait(1000);
+                wait(this.consumidorEspera);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Buffer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        this.buffer = product;
         
+        this.addProduct(product);
+        DefaultTableModel model = (DefaultTableModel) gui.jTable1.getModel();
+        model.addRow(new Object[]{product});
+        gui.jProgressBar2.setValue(this.theBuffer.size());
+        gui.labelTareasPendientes.setText(this.theBuffer.size() + "");
+        this.printBuffer();
         notify();
     }
     
@@ -46,6 +74,36 @@ public class Buffer {
     synchronized static void print(String string) {
         System.out.print(count++ + " ");
         System.out.println(string);
+    }
+    
+    boolean bufferIsFull() {
+        return this.theBuffer.size() >= this.size;
+    }
+    
+    Character addProduct(char product) {
+        if(this.theBuffer.size() < this.size) {
+            
+            this.theBuffer.add(product);
+            return product;
+        }
+        return null;
+    }
+    
+    Character retrieveProduct() {
+        if(!this.theBuffer.isEmpty())
+            return this.theBuffer.remove();
+        
+        return null;
+    }
+    
+    void printBuffer() {
+        String output = "[";
+        for(Character c : this.theBuffer) {
+            output += c + ", ";
+        }
+        output += "]";
+        System.out.println(output);
+        
     }
     
 }
