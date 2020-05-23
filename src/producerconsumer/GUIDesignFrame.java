@@ -13,6 +13,8 @@ import javax.swing.JSpinner;
 import javax.swing.border.Border;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -24,6 +26,8 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     private boolean running = false;
     private boolean connected = false;
     private boolean server = true;
+    private ArrayList<Producer> producers;
+    private ArrayList<Consumer> consumers;
 
     /**
      * Creates new form GUIDesignFrame
@@ -46,8 +50,9 @@ public class GUIDesignFrame extends javax.swing.JFrame {
         } catch(UnknownHostException ex) {
             // TODO: notify user that there is a problem with the connection, try later
         }
+        producers = new ArrayList<>();
+        consumers = new ArrayList<>();
         startServer();
-        
     }
     
     public void startServer(){
@@ -702,7 +707,7 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                                 .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(bufferCantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap(40, Short.MAX_VALUE))
+                .addContainerGap(50, Short.MAX_VALUE))
         );
         cardServerConfigLayout.setVerticalGroup(
             cardServerConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -957,14 +962,9 @@ public class GUIDesignFrame extends javax.swing.JFrame {
 
         jTable1.setAutoCreateRowSorter(true);
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
+            new Object [][]{},
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "Product"
             }
         ));
         jTable1.setSelectionBackground(new java.awt.Color(229, 225, 238));
@@ -973,14 +973,9 @@ public class GUIDesignFrame extends javax.swing.JFrame {
         jScrollPane2.setBackground(new java.awt.Color(255, 255, 255));
 
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
+            new Object [][]{},
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "Product", "Result"
             }
         ));
         jTable2.setSelectionBackground(new java.awt.Color(229, 225, 238));
@@ -1007,7 +1002,7 @@ public class GUIDesignFrame extends javax.swing.JFrame {
 
         jProgressBar2.setBackground(new java.awt.Color(250, 250, 255));
         jProgressBar2.setForeground(new java.awt.Color(0, 204, 204));
-        jProgressBar2.setValue(50);
+        jProgressBar2.setValue(0);
         jProgressBar2.setPreferredSize(new java.awt.Dimension(146, 10));
         jProgressBar2.setString("");
         jProgressBar2.setStringPainted(true);
@@ -1101,26 +1096,57 @@ public class GUIDesignFrame extends javax.swing.JFrame {
         if(server){
             JSpinner[] spinners = {productorCantidad, productorEspera, valoresFinal, valoresInicial, bufferCantidad, consumidorCantidad, consumidorEspera};
             if(running){   
+                for (Producer producer : this.producers) {
+                    producer.kill();
+                }
+                for (Consumer consumer : this.consumers) {
+                    consumer.kill();
+                }
                inputDefault(spinners);
                btn_start.setLabel("Iniciar");
                removeRunningValues();
+               running = !running;
             }
             else {
-                inputLock(spinners);
-                btn_start.setLabel("Parar");
-                setRunningValues();
-
-                //TODO: validar datos
-
-                Buffer buffer = new Buffer(Integer.parseInt(bufferCantidad.getValue().toString()));
+                int bCantidad = Integer.parseInt(bufferCantidad.getValue().toString());
+                int pCantidad = Integer.parseInt(productorCantidad.getValue().toString());
+                int pEspera = Integer.parseInt(productorEspera.getValue().toString());
+                int cCantidad = Integer.parseInt(consumidorCantidad.getValue().toString());
+                int cEspera = Integer.parseInt(consumidorEspera.getValue().toString());
+                
+                //TODO: Ivan, aqui se reciben los datos de los valores inicial y final
+                int vInicial = Integer.parseInt(valoresInicial.getValue().toString());
+                int vFinal = Integer.parseInt(valoresFinal.getValue().toString());
   
-                Producer producer = new Producer(buffer);
-                producer.start();
+                if(bCantidad > 0 && pCantidad > 0 && cCantidad > 0 && pEspera >= 0 && cEspera >= 0) {
+                    jProgressBar2.setValue(0);
+                    DefaultTableModel model1 = (DefaultTableModel) this.jTable1.getModel();
+                    model1.setRowCount(0);
+                    DefaultTableModel model2 = (DefaultTableModel) this.jTable2.getModel();
+                    model2.setRowCount(0);
+                    labelTareasCompletadas.setText("0");
+                    labelTareasPendientes.setText("0");
+                    inputLock(spinners);
+                    btn_start.setLabel("Parar");
+                    setRunningValues();
+                
+                    Buffer buffer = new Buffer(bCantidad, pEspera, cEspera, this);
+                    jProgressBar2.setMaximum(bCantidad);
 
-                Consumer consumer = new Consumer(buffer);
-                consumer.start();
+                    for (int producers = 0; producers < pCantidad; producers++) {
+                        Producer producer = new Producer(buffer, pEspera);
+                        this.producers.add(producer);
+                        producer.start();
+                    }
+
+                    for (int consumers = 0; consumers < cCantidad; consumers++) {
+                        Consumer consumer = new Consumer(buffer, cEspera);
+                        this.consumers.add(consumer);
+                        consumer.start();
+                    }
+                    running = !running;
+                }
             }
-            running = !running;
         }
         else {
             // TODO: hacer la conexion con el servidor
@@ -1180,7 +1206,11 @@ public class GUIDesignFrame extends javax.swing.JFrame {
         }
         else{
             jToggleButton1.setText("Servidor");
-            btn_start.setLabel("Iniciar");
+            if(running){
+                btn_start.setLabel("Parar");
+            } else {
+                btn_start.setLabel("Iniciar");
+            }
             btn_menu_2.setVisible(true);
             btn_menu_3.setVisible(true);
             btn_menu_4.setVisible(true);
@@ -1372,13 +1402,13 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
-    private javax.swing.JProgressBar jProgressBar2;
+    public javax.swing.JProgressBar jProgressBar2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTable jTable2;
+    public javax.swing.JTable jTable1;
+    public javax.swing.JTable jTable2;
     private javax.swing.JTable jTable3;
     private javax.swing.JTable jTable4;
     private javax.swing.JTextField jTextField1;
@@ -1388,8 +1418,8 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     private javax.swing.JLabel labelCantProd;
     private javax.swing.JLabel labelRangoFinal;
     private javax.swing.JLabel labelRangoInicial;
-    private javax.swing.JLabel labelTareasCompletadas;
-    private javax.swing.JLabel labelTareasPendientes;
+    public javax.swing.JLabel labelTareasCompletadas;
+    public javax.swing.JLabel labelTareasPendientes;
     private javax.swing.JLabel labelTiempCons;
     private javax.swing.JLabel labelTiempProd;
     private javax.swing.JLabel lbl_title;
