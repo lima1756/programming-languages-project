@@ -18,8 +18,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import producerconsumer.inputAnalysis.AnalyzerListener;
-import producerconsumer.inputAnalysis.Lexical;
-import producerconsumer.inputAnalysis.Syntactical;
 import producerconsumer.inputAnalysis.Token;
 
 /**
