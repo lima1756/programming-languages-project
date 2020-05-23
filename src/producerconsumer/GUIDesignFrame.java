@@ -1256,9 +1256,14 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
+        String preorder = jTextField1.getText().trim();
+        Analyzer anal = new Analyzer(preorder);
+        
+        if(anal.getResult() == true);
+        else jTextField1.setText("Invalid Format");
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    
     
      private void setColor(JPanel pane)
     {
