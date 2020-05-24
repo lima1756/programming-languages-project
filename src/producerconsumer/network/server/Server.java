@@ -144,5 +144,9 @@ public class Server {
         
         //return false;
     }
+    
+    public Socket[] getSockets(){
+        return (Socket[]) this.socketsMap.values().toArray();
+    }
 
 }

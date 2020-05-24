@@ -12,11 +12,12 @@ public class Consumer extends Thread {
     Consumer(Buffer buffer, int consumidorEspera) {
         this.buffer = buffer;
         this.consumidorEspera = consumidorEspera;
-        this.alive = true;
+        this.alive = false;
     }
     
     @Override
     public void run() {
+        this.alive = true;
         System.out.println("Running Consumer...");
         char product;
         

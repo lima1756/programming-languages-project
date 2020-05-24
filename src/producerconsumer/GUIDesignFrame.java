@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.border.Border;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
@@ -28,8 +29,10 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     private boolean running = false;
     private boolean connected = false;
     private boolean server = true;
+    private Client client;
     private ArrayList<Producer> producers;
     private ArrayList<Consumer> consumers;
+    private Socket[] sockets;
     private Server appServer;
 
     /**
@@ -53,8 +56,8 @@ public class GUIDesignFrame extends javax.swing.JFrame {
         } catch(UnknownHostException ex) {
             // TODO: notify user that there is a problem with the connection, try later
         }
-        producers = new ArrayList<>();
-        consumers = new ArrayList<>();
+        this.producers = new ArrayList<>();
+        this.consumers = new ArrayList<>();
         startServer();
     }
     
@@ -765,9 +768,11 @@ public class GUIDesignFrame extends javax.swing.JFrame {
         jLabel37.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel37.setText("Alias Cliente");
 
-        tf_alias.setText("jTextField2");
-
-        tf_server_ip.setText("jTextField2");
+        tf_alias.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tf_aliasActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout cardClientConfigLayout = new javax.swing.GroupLayout(cardClientConfig);
         cardClientConfig.setLayout(cardClientConfigLayout);
@@ -916,7 +921,7 @@ public class GUIDesignFrame extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Client Alias", "Client IP", "Productores", "Consumidores"
+                "Client IP"
             }
         ) {
             Class[] types = new Class [] {
@@ -1130,6 +1135,7 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                 int vFinal = Integer.parseInt(valoresFinal.getValue().toString());
   
                 if(bCantidad > 0 && pCantidad > 0 && cCantidad > 0 && pEspera >= 0 && cEspera >= 0) {
+                    jProgressBar2.setMaximum(bCantidad);
                     jProgressBar2.setValue(0);
                     DefaultTableModel model1 = (DefaultTableModel) this.jTable1.getModel();
                     model1.setRowCount(0);
@@ -1146,18 +1152,17 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                     
                     if(!hasClients) {
                         Buffer buffer = new Buffer(bCantidad, pEspera, cEspera, this);
-                        jProgressBar2.setMaximum(bCantidad);
 
                         for (int producers = 0; producers < pCantidad; producers++) {
                             Producer producer = new Producer(buffer, pEspera);
-                            this.producers.add(producer);
                             producer.start();
+                            this.producers.add(producer);
                         }
 
                         for (int consumers = 0; consumers < cCantidad; consumers++) {
                             Consumer consumer = new Consumer(buffer, cEspera);
-                            this.consumers.add(consumer);
                             consumer.start();
+                            this.consumers.add(consumer);
                         }
                     }
                     
@@ -1165,17 +1170,17 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                 }
             }
         }
-        else { //server:boolean is false
-            // TODO: hacer la conexion con el servidor
+        else {
             if(connected) {
-                //close client stuff
-                
+                System.out.println("Disconnecting to server unu");
+                btn_start.setLabel("Conectar");
+                this.client.kill();
             }
             else {
-                System.out.println("connecting to server uwu");
-                Client c = new Client(this.tf_server_ip.getText());
-                c.run();
-                
+                System.out.println("Connecting to server uwu");
+                btn_start.setLabel("Detener");
+                this.client = new Client(this.tf_server_ip.getText());
+                this.client.run();
             }
             connected = !connected;
         }
@@ -1200,11 +1205,9 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     }
     
     private void jPanel2MouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel2MouseDragged
-        
         int x = evt.getXOnScreen();
         int y = evt.getYOnScreen();
         this.setLocation(x-xWindowPosition,y-yWindowPosition);
-        
     }//GEN-LAST:event_jPanel2MouseDragged
 
     private void jPanel2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel2MousePressed
@@ -1238,6 +1241,12 @@ public class GUIDesignFrame extends javax.swing.JFrame {
             btn_menu_2.setVisible(true);
             btn_menu_3.setVisible(true);
             btn_menu_4.setVisible(true);
+            DefaultTableModel model = (DefaultTableModel) this.jTable3.getModel();
+            model.setRowCount(0);
+            this.sockets = appServer.getSockets();
+            for(int socket = 0; socket < this.sockets.length; socket++) {
+                model.addRow(new Object[]{this.sockets[socket].getInetAddress()});
+            }
             startServer();
         }
         server = !server;
@@ -1286,6 +1295,10 @@ public class GUIDesignFrame extends javax.swing.JFrame {
         if(anal.getResult() == true);
         else jTextField1.setText("Invalid Format");
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void tf_aliasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tf_aliasActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tf_aliasActionPerformed
 
     
     
