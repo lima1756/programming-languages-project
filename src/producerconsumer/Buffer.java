@@ -38,11 +38,19 @@ public class Buffer {
         
         product = this.retrieveProduct();
         this.completadas++;
+        try{
         DefaultTableModel model1 = (DefaultTableModel) gui.jTable1.getModel();
         model1.removeRow(0);
+        } catch (Exception e){
+            System.out.println(e);
+        }
         gui.labelTareasPendientes.setText(this.theBuffer.size() + "");
+        try{
         DefaultTableModel model2 = (DefaultTableModel) gui.jTable2.getModel();
         model2.addRow(new Object[]{product, "Test"});
+        } catch (Exception e){
+            System.out.println(e);
+        }
         gui.jProgressBar2.setValue(this.theBuffer.size());
         gui.labelTareasCompletadas.setText(this.completadas + "");
         this.printBuffer();
