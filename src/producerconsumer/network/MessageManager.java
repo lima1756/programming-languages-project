@@ -15,7 +15,9 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
 public class MessageManager {
-
+    
+    private int message;
+    
     public static boolean sendMessage(JsonObject message, Socket connection) throws IOException {
         try {
             Writer out;

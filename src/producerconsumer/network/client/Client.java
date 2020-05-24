@@ -92,7 +92,7 @@ public class Client extends Thread{
     }
     
     public static void main(String[] args) {
-        Client c = new Client("192.168.1.68");
+        Client c = new Client("192.168.1.65");
         c.run();
     }
     

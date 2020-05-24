@@ -12,6 +12,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import producerconsumer.GUIDesignFrame;
 
 
 public class Server {
@@ -20,11 +21,13 @@ public class Server {
     private ServerBuffer buffer;
     private Semaphore semaphore;
     private boolean running;
+    private GUIDesignFrame gui;
+    
 	private final BlockingQueue<ServerProducer> idleProducers;
 	private final BlockingQueue<ServerConsumer> idleConsumers;
 
-	public Server() {
-            System.out.println("Server instance...");
+	public Server(GUIDesignFrame gui) {
+            this.gui = gui;
             socketsMap = new ConcurrentHashMap<>();
             idleProducers = new LinkedBlockingQueue<>();
             idleConsumers = new LinkedBlockingQueue<>();
@@ -62,8 +65,8 @@ public class Server {
         }.start();
     }
 
-    public void run(int bufferSize, int consumers, int producers){
-        this.buffer = new ServerBuffer(bufferSize);
+    public void run(int bufferSize, int consumers, int producers, GUIDesignFrame gui){
+        this.buffer = new ServerBuffer(bufferSize, gui);
         semaphore = new Semaphore(bufferSize);
         running = true;
         
@@ -119,10 +122,10 @@ public class Server {
            
     }
     
-    public boolean runServer(int bufferSize, int consumers, int producers) {
+    public boolean runServer(int bufferSize, int consumers, int producers, GUIDesignFrame gui) {
         if(!this.socketsMap.isEmpty()){
             running = true;
-            run(bufferSize, consumers, producers);
+            run(bufferSize, consumers, producers, gui);
             return true;
         }
         return false;
