@@ -15,6 +15,7 @@ public class Buffer {
     private int size, completadas;
     private int productorEspera, consumidorEspera;
     private GUIDesignFrame gui;
+    Evaluator ev = new Evaluator();
     
     Buffer(int size, int productorEspera, int consumidorEspera, GUIDesignFrame gui) {
         this.size = size;
@@ -45,7 +46,7 @@ public class Buffer {
             System.out.println(e);
         }
         gui.labelTareasPendientes.setText(this.theBuffer.size() + "");
-        Evaluator ev = new Evaluator();
+        
         String output = ev.eval(product);
         try{
             DefaultTableModel model2 = (DefaultTableModel) gui.jTable2.getModel();

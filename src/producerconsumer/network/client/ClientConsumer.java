@@ -25,6 +25,7 @@ public class ClientConsumer extends Thread{
     JsonObject json;
     int wait;
     Socket socket;
+    Evaluator ev = new Evaluator();
 
     public ClientConsumer(JsonObject json, int wait, Socket socket){
         this.json = json;
@@ -38,7 +39,7 @@ public class ClientConsumer extends Thread{
         String operation = json.get("consume").getAsString();
         json = new JsonObject();
         json.add("action", new JsonPrimitive(ActionSignals.CONSUMED.toString()));
-        Evaluator ev = new Evaluator();
+        
         String output = ev.eval(operation);
         json.add("operation", new JsonPrimitive(operation));
         json.add("consumed", new JsonPrimitive(output));
