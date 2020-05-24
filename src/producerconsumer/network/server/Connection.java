@@ -118,12 +118,12 @@ public class Connection extends Thread {
         }
     }
     
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         Server s = new Server();
         s.listen();
         Scanner keyboard = new Scanner(System.in);
         String input = keyboard.nextLine();
         s.run(5, 2, 1); 
         
-    }
+    }*/
 }
