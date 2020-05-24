@@ -15,6 +15,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
+import producerconsumer.network.client.Client;
+import producerconsumer.network.server.Server;
 
 /**
  *
@@ -28,6 +30,7 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     private boolean server = true;
     private ArrayList<Producer> producers;
     private ArrayList<Consumer> consumers;
+    private Server appServer;
 
     /**
      * Creates new form GUIDesignFrame
@@ -55,8 +58,14 @@ public class GUIDesignFrame extends javax.swing.JFrame {
         startServer();
     }
     
-    public void startServer(){
-        // TODO: start Server
+    private void startServer(){
+        appServer = new Server(this);
+        appServer.listen();
+        //Scanner keyboard = new Scanner(System.in);
+    }
+    
+    private void stopServer() {
+        appServer.stop();
     }
 
     /**
@@ -1104,6 +1113,8 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                 }
                inputDefault(spinners);
                btn_start.setLabel("Iniciar");
+               stopServer();
+               startServer();
                removeRunningValues();
                running = !running;
             }
@@ -1129,31 +1140,41 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                     inputLock(spinners);
                     btn_start.setLabel("Parar");
                     setRunningValues();
-                
-                    Buffer buffer = new Buffer(bCantidad, pEspera, cEspera, this);
-                    jProgressBar2.setMaximum(bCantidad);
+                    
+                    
+                    boolean hasClients = appServer.runServer(bCantidad, cCantidad, pCantidad, this);
+                    
+                    if(!hasClients) {
+                        Buffer buffer = new Buffer(bCantidad, pEspera, cEspera, this);
+                        jProgressBar2.setMaximum(bCantidad);
 
-                    for (int producers = 0; producers < pCantidad; producers++) {
-                        Producer producer = new Producer(buffer, pEspera);
-                        this.producers.add(producer);
-                        producer.start();
-                    }
+                        for (int producers = 0; producers < pCantidad; producers++) {
+                            Producer producer = new Producer(buffer, pEspera);
+                            this.producers.add(producer);
+                            producer.start();
+                        }
 
-                    for (int consumers = 0; consumers < cCantidad; consumers++) {
-                        Consumer consumer = new Consumer(buffer, cEspera);
-                        this.consumers.add(consumer);
-                        consumer.start();
+                        for (int consumers = 0; consumers < cCantidad; consumers++) {
+                            Consumer consumer = new Consumer(buffer, cEspera);
+                            this.consumers.add(consumer);
+                            consumer.start();
+                        }
                     }
+                    
                     running = !running;
                 }
             }
         }
-        else {
+        else { //server:boolean is false
             // TODO: hacer la conexion con el servidor
             if(connected) {
+                //close client stuff
                 
             }
             else {
+                System.out.println("connecting to server uwu");
+                Client c = new Client(this.tf_server_ip.getText());
+                c.run();
                 
             }
             connected = !connected;
@@ -1198,13 +1219,16 @@ public class GUIDesignFrame extends javax.swing.JFrame {
 
     private void jToggleButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton1ActionPerformed
         if(server){
+            System.out.println("Client mode ON");
             jToggleButton1.setText("Cliente");
             btn_start.setLabel("Conectar");
             btn_menu_2.setVisible(false);
             btn_menu_3.setVisible(false);
             btn_menu_4.setVisible(false);
+            stopServer();
         }
         else{
+            System.out.println("Client mode OFF");
             jToggleButton1.setText("Servidor");
             if(running){
                 btn_start.setLabel("Parar");
