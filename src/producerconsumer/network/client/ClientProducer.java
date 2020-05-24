@@ -40,7 +40,7 @@ public class ClientProducer extends Thread{
         System.out.println("producer produced: " + json);
         String operation = json.get("raw_op").getAsString();
         while(operation.contains("_N")){
-            operation = operation.replaceFirst("_N", ((Integer)(min + new Random().nextInt(max-min))).toString());
+            operation = operation.replaceFirst("_N", ((Double)(min + new Random().nextDouble()*(max-min))).toString());
         }
         json = new JsonObject();
         json.add("action", new JsonPrimitive(ActionSignals.PRODUCED.toString()));

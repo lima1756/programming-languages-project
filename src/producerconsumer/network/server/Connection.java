@@ -93,11 +93,9 @@ public class Connection extends Thread {
                         case PRODUCED:
                             String product = json.get("produced").getAsString();
                             String idP = json.get("id").getAsString();
-                            String operation = json.get("operation").getAsString();
                             System.out.println("producer "+ socket.getInetAddress().toString() + " - " + idP + ": produced: " + product);
                             
-                            DefaultTableModel model2 = (DefaultTableModel) gui.jTable2.getModel();
-                            model2.addRow(new Object[]{operation, product});
+                            
                             
                             buffer.produce(product);
                             idleProducers.add(new ServerProducer(idP, socket, dictionary));
@@ -105,6 +103,9 @@ public class Connection extends Thread {
                         case CONSUMED:
                             String idC = json.get("id").getAsString();
                             String answer = json.get("consumed").getAsString();
+                            String operation = json.get("operation").getAsString();
+                            DefaultTableModel model2 = (DefaultTableModel) gui.jTable2.getModel();
+                            model2.addRow(new Object[]{operation, answer});
                             //System.out.println("consumer " + socket.getInetAddress().toString() + " - " + idC + ": consumed: " + answer);
                             // TODO: add to consumed data
                             idleConsumers.add(new ServerConsumer(idC, socket));
@@ -122,9 +123,15 @@ public class Connection extends Thread {
                 }
             }
         } catch (NullPointerException ex) {
+            System.out.println(json);
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
             this.logOut();
             this.closeSocket();
+            
         } catch (IOException ex) {
+            System.out.println(json);
+            System.out.println(ex);
             this.logOut();
             this.closeSocket();
         }

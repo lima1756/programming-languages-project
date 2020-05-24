@@ -32,7 +32,7 @@ public class Producer extends Thread {
         while(alive) {
             product = dictionary.get(r.nextInt(dictionary.size()));
             while(product.contains("_N")){
-                product = product.replaceFirst("_N", ((Integer)(min + r.nextInt(max-min))).toString());
+                product = product.replaceFirst("_N", ((Double)(min + r.nextDouble()*(max-min))).toString());
             }
             this.buffer.produce(product);
             //System.out.println("Producer produced: " + product);

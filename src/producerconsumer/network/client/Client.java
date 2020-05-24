@@ -10,10 +10,12 @@ import com.google.gson.JsonPrimitive;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import producerconsumer.network.ActionSignals;
 import producerconsumer.network.MessageManager;
+
 
 public class Client extends Thread{
     
@@ -24,6 +26,7 @@ public class Client extends Thread{
     private int producerWait;
     private int consumerWait;
     private int min, max;
+    private Semaphore semaphore;
     
     public Client(String IP){
         try{
@@ -50,31 +53,6 @@ public class Client extends Thread{
                 consumerWait = json.get("waitConsumers").getAsInt();
                 min = json.get("min").getAsInt();
                 max = json.get("max").getAsInt();
-                new Thread(new Runnable(){
-                    @Override
-                    public void run(){
-                        JsonObject json;
-                        String action;
-                        while(alive) {
-                            try{
-                                json = MessageManager.readMessage(socket);
-                                action = json.get("action").getAsString();
-                                switch (ActionSignals.valueof(action)) {
-                                    case PRODUCE:
-                                        new ClientProducer(json, producerWait, socket, min, max).start();
-                                        break;
-                                    case CONSUME:
-                                        new ClientConsumer(json, consumerWait, socket).start();
-                                        break;
-                                }
-                            } catch(IOException e) {
-                                System.out.println(e);
-                            } catch(ClassCastException ex){
-                                System.out.println(ex);
-                            }
-                        } 
-                    }
-                }).start();
                 for(Integer i = 0; i < consumers; i++){
                     json = new JsonObject();
                     json.add("action", new JsonPrimitive(ActionSignals.CONSUMER_OK.toString()));
@@ -97,9 +75,25 @@ public class Client extends Thread{
                         System.out.println(ex);
                     }
                 }
+                while(alive) {
+                    try{
+                        json = MessageManager.readMessage(socket);
+                        action = json.get("action").getAsString();
+                        switch (ActionSignals.valueof(action)) {
+                            case PRODUCE:
+                                new ClientProducer(json, producerWait, socket, min, max).start();
+                                break;
+                            case CONSUME:
+                                new ClientConsumer(json, consumerWait, socket).start();
+                                break;
+                        }
+                    } catch(IOException | ClassCastException e) {
+                        System.out.println(e);
+                    }
+                } 
             }
            
-        } catch(IOException ex) {
+        } catch(IOException  ex ) {
                 System.out.println("Connection finished");
         }
     }
