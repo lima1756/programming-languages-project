@@ -5,10 +5,8 @@
  */
 package producerconsumer;
 
-/**
- *
- * @author Victor Zazueta
- */
+import java.util.ArrayList;
+
 public class Analyzer {
     private boolean result;
     
@@ -36,9 +34,10 @@ public class Analyzer {
     }
     
     public static boolean checkForMissingOperator(String operation){
+        //System.out.println("to check: "+operation);
         String []parts = operation.split("\\s+");
-        System.out.println("operador: "+parts[0]+"\tlength: "+parts[0].length());
-        return parts[0].length() == 0;
+        //System.out.println("operador: "+parts[0]+"\tlength: "+parts[0].length());
+        return !operator(parts[0]) && operation.length() > 1;
     }
     
     
@@ -50,16 +49,31 @@ public class Analyzer {
         
         String split[] = preorder.split("[\\(\\)]");
         
+        ArrayList<Integer> indexesToRemove = new ArrayList<>();
+
         if(operator(split[1].trim())){
             for(int i=2; i<split.length; i++){
-                if(checkForMissingOperator(split[i])){
+                if(checkForMissingOperator(split[i].trim())){
+                    //System.out.println("Antes: "+split[1]);
                     split[1] += split[i].trim()+" ";
+                    indexesToRemove.add(i);
+                    //System.out.println("Despues: "+split[1]+"\n");
+                    //System.out.println();
                 }
             }
         }
+
+        ArrayList<String> newSplit = new ArrayList<>();
         
-        for(int i=1; i<split.length; i++) 
-            if(!operation(split[i])) 
+        for(int i=1, j=0; i<split.length; i++){
+            //System.out.println("previous array: "+split[i]);
+            if(indexesToRemove.contains(i) || split[i].equals(" ")) continue;
+            newSplit.add(split[i]);
+            //System.out.println("new array: "+newSplit.get(j++));
+        }
+        
+        for(int i=0; i<newSplit.size(); i++) 
+            if(!operation(newSplit.get(i))) 
                 return false;
                         
        
@@ -142,7 +156,8 @@ public class Analyzer {
     
     private static boolean operator(String operator){
         char o;
-        
+        if(operator.length() == 0) return false;
+
         for(int i=0; i<operator.length(); i++){
             o = operator.charAt(i);
             if(!(isLetter(o) || 

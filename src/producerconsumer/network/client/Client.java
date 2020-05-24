@@ -20,6 +20,7 @@ public class Client extends Thread{
     private Socket socket;
     private int consumers;
     private int producers;
+    private boolean alive;
     
     public Client(String IP){
         try{
@@ -27,10 +28,14 @@ public class Client extends Thread{
         } catch(IOException e){
             System.out.println(e);
         }
+        this.consumers = 0;
+        this.producers = 0;
+        this.alive = false;
     }
     
     @Override
     public void run() {
+        this.alive = true;
         try{
             JsonObject json = MessageManager.readMessage(socket);
             String action = json.get("action").getAsString();
@@ -61,7 +66,7 @@ public class Client extends Thread{
                     }
                 }
             }
-            while(true) {
+            while(alive) {
                 json = MessageManager.readMessage(socket);
                 action = json.get("action").getAsString();
                 switch (ActionSignals.valueof(action)) {
@@ -89,6 +94,14 @@ public class Client extends Thread{
         } catch(IOException ex) {
                 System.out.println("Connection finished");
         }
+    }
+
+    public String getIP() {
+        return socket.getInetAddress().toString();
+    }
+
+    public void kill(){
+        this.alive = false;
     }
     
     public static void main(String[] args) {
