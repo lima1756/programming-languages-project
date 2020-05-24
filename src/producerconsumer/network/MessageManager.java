@@ -45,7 +45,7 @@ public class MessageManager {
                 response.append((char) c);
             }
             
-            System.out.println("Message: " + response.toString());
+            //System.out.println("Message: " + response.toString());
 
             JsonParser parser = new JsonParser();
             return (JsonObject) parser.parse(response.toString());

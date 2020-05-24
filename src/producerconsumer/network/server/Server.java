@@ -84,8 +84,10 @@ public class Server {
                 while(running){
                     try{
                         boolean flag = semaphore.tryAcquire();
-                        if(flag)
+                        if(flag){
+                            System.out.println("acquired");
                             idleProducers.take().produce();
+                        }
                         Thread.sleep(100);
                     } catch(InterruptedException ex){
                         System.out.println(ex);
@@ -107,6 +109,7 @@ public class Server {
                     try{
                         idleConsumers.take().consume(buffer.consume());
                         semaphore.release();
+                        System.out.println("release");
                         Thread.sleep(100);
                     }
                     catch(InterruptedException e){
@@ -143,6 +146,15 @@ public class Server {
         }
         
         //return false;
+    }
+    
+    public Socket[] getSockets(){
+        Object[] objects = this.socketsMap.values().toArray();
+        Socket[] sockets = new Socket[objects.length];
+        for(int object = 0; object < objects.length; object++) {
+            sockets[object] = (Socket) objects[object];
+        }
+        return sockets;
     }
 
 }
