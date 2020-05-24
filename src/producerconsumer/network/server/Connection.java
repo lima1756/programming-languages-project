@@ -139,16 +139,19 @@ public class Connection extends Thread {
             this.logOut();
             this.closeSocket();
         }
+        gui.removeClient(socket);
 
     }
 
     private void logOut() {
         this.closeSocket();
+        gui.removeClient(socket);
     }
 
     private void closeSocket() {
         try {
             socketsMap.remove(this.socket.getInetAddress());
+            gui.removeClient(socket);
             this.socket.close();
             this.finalize();
             System.out.println("Socket cerrado: " + this.socket.getInetAddress());

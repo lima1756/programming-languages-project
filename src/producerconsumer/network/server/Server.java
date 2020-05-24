@@ -9,9 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.BlockingQueue;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import producerconsumer.GUIDesignFrame;
 
 
@@ -54,6 +51,7 @@ public class Server {
                     while(!running)
                     {
                         Socket socket = serverSocket.accept();
+                        gui.addClient(socket);
                         socketsMap.put(socket.getInetAddress(), socket);
                         System.out.println("New client: " + socket.getInetAddress().toString());
                     }

@@ -42,6 +42,7 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
     private final ArrayList<String> dictionary;
     private Socket[] sockets;
     private Server appServer;
+    private ArrayList<Socket> clients;
 
     /**
      * Creates new form GUIDesignFrame
@@ -53,8 +54,6 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
         setColor(btn_menu_1); 
         ind_1.setOpaque(true);
         resetColor(new JPanel[]{btn_menu_2}, new JPanel[]{ind_2});
-        inputError(consumidorCantidad);
-        inputOK(consumidorEspera);
         panelRunningValues.setVisible(false);
         removeRunningValues();
         // Obtaining local ip address
@@ -74,17 +73,20 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
         updateDictionaryTable();
         this.producers = new ArrayList<>();
         this.consumers = new ArrayList<>();
+        clients = new ArrayList<>();
+        updateClientTable();
         startServer();
     }
     
     private void startServer(){
         appServer = new Server(this, dictionary);
         appServer.listen();
-        //Scanner keyboard = new Scanner(System.in);
+        updateClientTable();
     }
     
     private void stopServer() {
         appServer.stop();
+        updateClientTable();
     }
 
     /**
@@ -825,7 +827,6 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
                 return types [columnIndex];
             }
         });
-        jTable4.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jTable4.setSelectionBackground(new java.awt.Color(229, 225, 238));
         jScrollPane4.setViewportView(jTable4);
 
@@ -983,7 +984,6 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
                 "Product"
             }
         ));
-        jTable1.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jTable1.setSelectionBackground(new java.awt.Color(229, 225, 238));
         jScrollPane1.setViewportView(jTable1);
 
@@ -995,7 +995,6 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
                 "Product", "Result"
             }
         ));
-        jTable2.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jTable2.setSelectionBackground(new java.awt.Color(229, 225, 238));
         jScrollPane2.setViewportView(jTable2);
 
@@ -1137,8 +1136,43 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
                 //TODO: Ivan, aqui se reciben los datos de los valores inicial y final
                 int vInicial = Integer.parseInt(valoresInicial.getValue().toString());
                 int vFinal = Integer.parseInt(valoresFinal.getValue().toString());
-  
-                if(bCantidad > 0 && pCantidad > 0 && cCantidad > 0 && pEspera >= 0 && cEspera >= 0) {
+                
+                if(bCantidad<=0){
+                    inputError(bufferCantidad);
+                } else {
+                    inputOK(bufferCantidad);
+                }
+                if(pCantidad<=0){
+                    inputError(productorCantidad);
+                } else {
+                    inputOK(productorCantidad);
+                }
+                if(pEspera<=0){
+                    inputError(productorEspera);
+                } else {
+                    inputOK(productorEspera);
+                }
+                if(cCantidad<=0){
+                    inputError(consumidorCantidad);
+                } else {
+                    inputOK(consumidorCantidad);
+                }
+                if(cEspera<=0){
+                    inputError(consumidorEspera);
+                } else {
+                    inputOK(consumidorEspera);
+                }
+                if(vInicial > vFinal){
+                    inputError(valoresInicial);
+                } else {
+                    inputOK(valoresInicial);
+                }
+                if(vFinal <= vInicial){
+                    inputError(valoresFinal);
+                } else {
+                    inputOK(valoresFinal);
+                }
+                if(bCantidad > 0 && pCantidad > 0 && cCantidad > 0 && pEspera >= 0 && cEspera >= 0 && vInicial<vFinal) {
                     jProgressBar2.setMaximum(bCantidad);
                     jProgressBar2.setValue(0);
                     try{
@@ -1192,6 +1226,7 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
             }
             connected = !connected;
         }
+        updateClientTable();
     }//GEN-LAST:event_btn_startActionPerformed
 
     private void btn_menu_1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_menu_1MousePressed
@@ -1210,6 +1245,7 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
         else {
             ((CardLayout) cardPanel.getLayout()).show(cardPanel, "cardClientConfig");
         }
+        updateClientTable();
     }
     
     private void jPanel2MouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel2MouseDragged
@@ -1270,6 +1306,7 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
         }
         server = !server;
         goToConfig();
+        updateClientTable();
     }//GEN-LAST:event_jToggleButton1ActionPerformed
 
     private void btn_menu_3MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_menu_3MousePressed
@@ -1304,10 +1341,11 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
             dictionary.remove(jComboBox1.getSelectedIndex()+4);
             updateDictionaryTable();
         }
+        updateClientTable();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
-        // TODO add your handling code here:
+        
     }//GEN-LAST:event_jTextField1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
@@ -1317,6 +1355,7 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
         l.prepare(currentOp, s.getStream());
         new Thread(s).start();
         new Thread(l).start();
+        updateClientTable();
     }//GEN-LAST:event_jButton2ActionPerformed
 
     
@@ -1516,6 +1555,44 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
             }
         } catch(Exception e){
             System.out.println(e);
+        }
+    }
+    
+    private void updateClientTable(){
+        DefaultTableModel model = (DefaultTableModel)jTable3.getModel();
+        for(int i = 0; i < clients.size(); i++)
+            model.removeRow(0);
+        int a = clients.size();
+        for(int i = 0; i<a; i++){
+            if(clients.get(i).isClosed()){
+                clients.remove(i);
+            }
+        }
+        for(int i = 0; i < clients.size(); i++){
+            Object[] data = {clients.get(i)};
+            model.addRow(data);
+        }
+    }
+    
+    public void addClient(Socket s){
+        DefaultTableModel model = (DefaultTableModel)jTable3.getModel();
+        for(int i = 0; i < clients.size(); i++)
+            model.removeRow(0);
+        clients.add(s);
+        for(int i = 0; i < clients.size(); i++){
+            Object[] data = {clients.get(i)};
+            model.addRow(data);
+        }
+    }
+    
+    public void removeClient(Socket s){
+        DefaultTableModel model = (DefaultTableModel)jTable3.getModel();
+        for(int i = 0; i < clients.size(); i++)
+            model.removeRow(0);
+        clients.remove(s);
+        for(int i = 0; i < clients.size(); i++){
+            Object[] data = {clients.get(i)};
+            model.addRow(data);
         }
     }
 }
