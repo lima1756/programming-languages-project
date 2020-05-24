@@ -29,9 +29,9 @@ public class Evaluator {
         if(!(this.schemeWorks = this.runScheme())){
             //JOptionPane.showMessageDialog(null, "Scheme no ha podido iniciarse, se usará kawa");
             this.scm = new Scheme();
-            System.out.println("-Evaluator: I'm using Kawa");
+            //System.out.println("-Evaluator: I'm using Kawa");
         }
-        else System.out.println("-Evaluator: Scheme is running");
+        //else System.out.println("-Evaluator: Scheme is running");
         
     }
     public String eval(String s){
