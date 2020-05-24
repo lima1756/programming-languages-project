@@ -13,11 +13,12 @@ public class Producer extends Thread {
     Producer(Buffer buffer, int productorEspera) {
         this.buffer = buffer;
         this.productorEspera = productorEspera;
-        this.alive = true;
+        this.alive = false;
     }
     
     @Override
     public void run() {
+        this.alive = true;
         System.out.println("Running Producer...");
         //TODO: Ivan, aqui esta "la materia prima" para producir
         String products = "AEIOU";
