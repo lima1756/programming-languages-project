@@ -35,15 +35,29 @@ public class Analyzer {
         return opening == closing;
     }
     
+    public static boolean checkForMissingOperator(String operation){
+        String []parts = operation.split("\\s+");
+        System.out.println("operador: "+parts[0]+"\tlength: "+parts[0].length());
+        return parts[0].length() == 0;
+    }
     
     
     // Prueba: (+ 1 (- 1 (/ 3 2)))
+    // Prueba: (+ (- 4 2) 5 7 6 (/ 2 4) 1)
     private static boolean parentheses(String preorder){
         
         if(!countParentheses(preorder)) return false;
         
         String split[] = preorder.split("[\\(\\)]");
-                
+        
+        if(operator(split[1].trim())){
+            for(int i=2; i<split.length; i++){
+                if(checkForMissingOperator(split[i])){
+                    split[1] += split[i].trim()+" ";
+                }
+            }
+        }
+        
         for(int i=1; i<split.length; i++) 
             if(!operation(split[i])) 
                 return false;
