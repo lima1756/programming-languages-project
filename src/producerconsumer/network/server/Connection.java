@@ -67,7 +67,7 @@ public class Connection extends Thread {
                         case PRODUCED:
                             String product = json.get("produced").getAsString();
                             String idP = json.get("id").getAsString();
-                            System.out.println("producer "+ socket.getInetAddress().toString() + " - " + idP + ": produced: " + product);
+                            //System.out.println("producer "+ socket.getInetAddress().toString() + " - " + idP + ": produced: " + product);
                             // TODO: add to produced data
                             buffer.produce(product);
                             idleProducers.add(new ServerProducer(idP, socket));
@@ -75,7 +75,7 @@ public class Connection extends Thread {
                         case CONSUMED:
                             String idC = json.get("id").getAsString();
                             String answer = json.get("consumed").getAsString();
-                            System.out.println("consumer " + socket.getInetAddress().toString() + " - " + idC + ": consumed: " + answer);
+                            //System.out.println("consumer " + socket.getInetAddress().toString() + " - " + idC + ": consumed: " + answer);
                             // TODO: add to consumed data
                             idleConsumers.add(new ServerConsumer(idC, socket));
                             break;
