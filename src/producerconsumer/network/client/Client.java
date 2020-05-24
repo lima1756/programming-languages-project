@@ -39,21 +39,48 @@ public class Client extends Thread{
         try{
             JsonObject json = MessageManager.readMessage(socket);
             String action = json.get("action").getAsString();
+            new Thread(new Runnable(){
+                @Override
+                public void run(){
+                    JsonObject json;
+                    String action;
+                    while(alive) {
+                        try{
+                            json = MessageManager.readMessage(socket);
+                            action = json.get("action").getAsString();
+                            switch (ActionSignals.valueof(action)) {
+                                case PRODUCE:
+                                    String id = json.get("id").getAsString();
+                                    System.out.println("producer produced: " + json);
+                                    json = new JsonObject();
+                                    json.add("action", new JsonPrimitive(ActionSignals.PRODUCED.toString()));
+                                    // TODO: change to real operation
+                                    json.add("produced", new JsonPrimitive("(+ "+ new Random().nextInt()+" 1)"));
+                                    json.add("id", new JsonPrimitive(id));
+                                    System.out.println("producer produced: " + json);
+                                    MessageManager.sendMessage(json, socket);
+                                    break;
+                                case CONSUME:
+                                    String idC = json.get("id").getAsString();
+                                    String operation = json.get("consume").getAsString();
+                                    json = new JsonObject();
+                                    json.add("action", new JsonPrimitive(ActionSignals.CONSUMED.toString()));
+                                    // TODO: change use operation to obtain the real answer
+                                    json.add("consumed", new JsonPrimitive(((Integer) new Random().nextInt()).toString()));
+                                    json.add("id", new JsonPrimitive(idC));
+                                    MessageManager.sendMessage(json, socket);
+                                    break;
+                            }
+                        } catch(IOException e) {
+                            System.out.println(e);
+                        }
+                    }
+                }
+            }).start();
             if(action.equals(ActionSignals.CONFIG.toString())){
                 System.out.println("entered client config");
                 consumers = json.get("consumers").getAsInt();
                 producers = json.get("producers").getAsInt();
-                for(Integer i = 0; i < producers; i++){
-                    json = new JsonObject();
-                    json.add("action", new JsonPrimitive(ActionSignals.PRODUCER_OK.toString()));
-                    json.add("id", new JsonPrimitive(i.toString()));
-                    MessageManager.sendMessage(json, socket);
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
                 for(Integer i = 0; i < consumers; i++){
                     json = new JsonObject();
                     json.add("action", new JsonPrimitive(ActionSignals.CONSUMER_OK.toString()));
@@ -65,32 +92,19 @@ public class Client extends Thread{
                         Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-            }
-            while(alive) {
-                json = MessageManager.readMessage(socket);
-                action = json.get("action").getAsString();
-                switch (ActionSignals.valueof(action)) {
-                    case PRODUCE:
-                        String id = json.get("id").getAsString();
-                        json = new JsonObject();
-                        json.add("action", new JsonPrimitive(ActionSignals.PRODUCED.toString()));
-                        // TODO: change to real operation
-                        json.add("produced", new JsonPrimitive("(+ "+ new Random().nextInt()+" 1)"));
-                        json.add("id", new JsonPrimitive(id));
-                        MessageManager.sendMessage(json, socket);
-                        break;
-                    case CONSUME:
-                        String idC = json.get("id").getAsString();
-                        String operation = json.get("consume").getAsString();
-                        json = new JsonObject();
-                        json.add("action", new JsonPrimitive(ActionSignals.CONSUMED.toString()));
-                        // TODO: change use operation to obtain the real answer
-                        json.add("consumed", new JsonPrimitive(((Integer) new Random().nextInt()).toString()));
-                        json.add("id", new JsonPrimitive(idC));
-                        MessageManager.sendMessage(json, socket);
-                        break;
+                for(Integer i = 0; i < producers; i++){
+                    json = new JsonObject();
+                    json.add("action", new JsonPrimitive(ActionSignals.PRODUCER_OK.toString()));
+                    json.add("id", new JsonPrimitive(i.toString()));
+                    MessageManager.sendMessage(json, socket);
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
+           
         } catch(IOException ex) {
                 System.out.println("Connection finished");
         }

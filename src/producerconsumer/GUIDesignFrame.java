@@ -19,6 +19,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import producerconsumer.inputAnalysis.AnalyzerListener;
+import producerconsumer.inputAnalysis.Lexical;
+import producerconsumer.inputAnalysis.Syntactical;
 import producerconsumer.inputAnalysis.Token;
 import producerconsumer.network.client.Client;
 import producerconsumer.network.server.Server;
@@ -37,7 +39,7 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
     private ArrayList<Producer> producers;
     private ArrayList<Consumer> consumers;
     private String currentOp;
-    private ArrayList<String> dictionary;
+    private final ArrayList<String> dictionary;
     private Socket[] sockets;
     private Server appServer;
 
@@ -153,8 +155,6 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
         valoresInicial = new javax.swing.JSpinner();
         cardClientConfig = new javax.swing.JPanel();
         jLabel36 = new javax.swing.JLabel();
-        jLabel37 = new javax.swing.JLabel();
-        tf_alias = new javax.swing.JTextField();
         tf_server_ip = new javax.swing.JTextField();
         cardServerDict = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
@@ -778,41 +778,25 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
         jLabel36.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jLabel36.setText("Direccion IP Servidor");
 
-        jLabel37.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
-        jLabel37.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel37.setText("Alias Cliente");
-
-        tf_alias.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tf_aliasActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout cardClientConfigLayout = new javax.swing.GroupLayout(cardClientConfig);
         cardClientConfig.setLayout(cardClientConfigLayout);
         cardClientConfigLayout.setHorizontalGroup(
             cardClientConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(cardClientConfigLayout.createSequentialGroup()
-                .addGap(42, 42, 42)
+                .addGap(130, 130, 130)
                 .addGroup(cardClientConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(tf_server_ip, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel37, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel36, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tf_alias, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(235, Short.MAX_VALUE))
+                    .addComponent(jLabel36, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(157, Short.MAX_VALUE))
         );
         cardClientConfigLayout.setVerticalGroup(
             cardClientConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(cardClientConfigLayout.createSequentialGroup()
-                .addGap(36, 36, 36)
-                .addComponent(jLabel37)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tf_alias, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addGap(128, 128, 128)
                 .addComponent(jLabel36)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tf_server_ip, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(211, Short.MAX_VALUE))
+                .addContainerGap(185, Short.MAX_VALUE))
         );
 
         cardPanel.add(cardClientConfig, "cardClientConfig");
@@ -841,6 +825,7 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
                 return types [columnIndex];
             }
         });
+        jTable4.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jTable4.setSelectionBackground(new java.awt.Color(229, 225, 238));
         jScrollPane4.setViewportView(jTable4);
 
@@ -998,6 +983,7 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
                 "Product"
             }
         ));
+        jTable1.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jTable1.setSelectionBackground(new java.awt.Color(229, 225, 238));
         jScrollPane1.setViewportView(jTable1);
 
@@ -1009,6 +995,7 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
                 "Product", "Result"
             }
         ));
+        jTable2.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jTable2.setSelectionBackground(new java.awt.Color(229, 225, 238));
         jScrollPane2.setViewportView(jTable2);
 
@@ -1171,7 +1158,7 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
                         Buffer buffer = new Buffer(bCantidad, pEspera, cEspera, this);
 
                         for (int producers = 0; producers < pCantidad; producers++) {
-                            Producer producer = new Producer(buffer, pEspera);
+                            Producer producer = new Producer(buffer, pEspera, dictionary, vInicial, vFinal);
                             producer.start();
                             this.producers.add(producer);
                         }
@@ -1316,15 +1303,12 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         currentOp = jTextField1.getText().trim();
-        //Analyzer anal = new Analyzer(currentOp);
-        
-        //if(anal.getResult() == true);
-        //else jTextField1.setText("Invalid Format");
+        Lexical l = Lexical.getInstance();
+        Syntactical s = Syntactical.getInstance(this);
+        l.prepare(currentOp, s.getStream());
+        new Thread(s).start();
+        new Thread(l).start();
     }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void tf_aliasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tf_aliasActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tf_aliasActionPerformed
 
     
     
@@ -1453,7 +1437,6 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
     private javax.swing.JLabel jLabel32;
     private javax.swing.JLabel jLabel33;
     private javax.swing.JLabel jLabel36;
-    private javax.swing.JLabel jLabel37;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -1489,7 +1472,6 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
     private javax.swing.JPanel panelRunningValues;
     private javax.swing.JSpinner productorCantidad;
     private javax.swing.JSpinner productorEspera;
-    private javax.swing.JTextField tf_alias;
     private javax.swing.JTextField tf_server_ip;
     private javax.swing.JSpinner valoresFinal;
     private javax.swing.JSpinner valoresInicial;

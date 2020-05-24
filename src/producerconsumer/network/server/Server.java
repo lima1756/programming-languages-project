@@ -60,6 +60,9 @@ public class Server {
                 {
                     System.out.println(e.getMessage());
                 }
+                catch(NullPointerException e){
+                    System.out.println("Server closed");
+                }
             }
             
         }.start();
@@ -137,7 +140,9 @@ public class Server {
     
     public void stop() {
         try {
-            serverSocket.close();
+            if(serverSocket != null){
+                serverSocket.close();
+            }
             running = false;
             
             //return true;

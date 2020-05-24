@@ -19,10 +19,11 @@ public class Consumer extends Thread {
     public void run() {
         this.alive = true;
         System.out.println("Running Consumer...");
-        char product;
+        String product;
         
         while(alive) {
             product = this.buffer.consume();
+            
             //System.out.println("Consumer consumed: " + product);
             Buffer.print("Consumer consumed: " + product);
             

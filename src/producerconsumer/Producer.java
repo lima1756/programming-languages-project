@@ -1,6 +1,7 @@
 
 package producerconsumer;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -9,25 +10,30 @@ public class Producer extends Thread {
     Buffer buffer;
     private int productorEspera;
     private boolean alive;
+    private ArrayList<String> dictionary;
+    Integer max, min;
     
-    Producer(Buffer buffer, int productorEspera) {
+    Producer(Buffer buffer, int productorEspera, ArrayList<String> dictionary, int min, int max) {
         this.buffer = buffer;
         this.productorEspera = productorEspera;
         this.alive = false;
+        this.dictionary = dictionary;
+        this.max = max;
+        this.min = min;
     }
     
     @Override
     public void run() {
         this.alive = true;
         System.out.println("Running Producer...");
-        //TODO: Ivan, aqui esta "la materia prima" para producir
-        String products = "AEIOU";
         Random r = new Random(System.currentTimeMillis());
-        char product;
+        String product;
         
         while(alive) {
-            //TODO: Ivan, aqui se genera el producto en base a la materia prima0
-            product = products.charAt(r.nextInt(5));
+            product = dictionary.get(r.nextInt(dictionary.size()));
+            while(product.contains("_N")){
+                product = product.replaceFirst("_N", ((Integer)(min + r.nextInt(max-min))).toString());
+            }
             this.buffer.produce(product);
             //System.out.println("Producer produced: " + product);
             Buffer.print("Producer produced: " + product);

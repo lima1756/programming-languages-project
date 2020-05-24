@@ -18,6 +18,7 @@ public class ServerConsumer {
 
     public void consume(String data) throws IOException {
         JsonObject json = new JsonObject();
+        System.out.println("Consumer "+socket.getInetAddress()+" - "+ id + " CONSUMED");
         json.add("action", new JsonPrimitive(ActionSignals.CONSUME.toString()));
         json.add("consume", new JsonPrimitive(data));
         json.add("id", new JsonPrimitive(this.id));

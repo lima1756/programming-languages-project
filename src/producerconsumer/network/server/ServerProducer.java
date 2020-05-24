@@ -18,6 +18,7 @@ public class ServerProducer {
 
     public void produce() throws IOException{
         JsonObject json = new JsonObject();
+        System.out.println("Consumer "+socket.getInetAddress()+" - "+ id + " TO PRODUCE");
         json.add("action", new JsonPrimitive(ActionSignals.PRODUCE.toString()));
         json.add("id", new JsonPrimitive(this.id));
         MessageManager.sendMessage(json, socket);

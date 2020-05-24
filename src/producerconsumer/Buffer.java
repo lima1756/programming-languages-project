@@ -11,7 +11,7 @@ import javax.swing.table.DefaultTableModel;
 public class Buffer {
     
     //private char buffer = 0;
-    public Queue<Character> theBuffer;
+    public Queue<String> theBuffer;
     private int size, completadas;
     private int productorEspera, consumidorEspera;
     private GUIDesignFrame gui;
@@ -25,8 +25,8 @@ public class Buffer {
         this.theBuffer = new LinkedList<>();
     }
     
-    synchronized char consume() {
-        char product = 0;
+    synchronized String consume() {
+        String product = "";
         
         while(this.theBuffer.isEmpty()) {
             try {
@@ -45,9 +45,11 @@ public class Buffer {
             System.out.println(e);
         }
         gui.labelTareasPendientes.setText(this.theBuffer.size() + "");
+        Evaluator ev = new Evaluator();
+        String output = ev.eval(product);
         try{
             DefaultTableModel model2 = (DefaultTableModel) gui.jTable2.getModel();
-            model2.addRow(new Object[]{product, "Test"});
+            model2.addRow(new Object[]{product, output});
         } catch (Exception e){
             System.out.println(e);
         }
@@ -56,10 +58,10 @@ public class Buffer {
         this.printBuffer();
         notify();
         
-        return product;
+        return product+" = "+output;
     }
     
-    synchronized void produce(char product) {
+    synchronized void produce(String product) {
         
         while(bufferIsFull()) {
             try {
@@ -88,7 +90,7 @@ public class Buffer {
         return this.theBuffer.size() >= this.size;
     }
     
-    Character addProduct(char product) {
+    String addProduct(String product) {
         if(this.theBuffer.size() < this.size) {
             
             this.theBuffer.add(product);
@@ -97,7 +99,7 @@ public class Buffer {
         return null;
     }
     
-    Character retrieveProduct() {
+    String retrieveProduct() {
         if(!this.theBuffer.isEmpty())
             return this.theBuffer.remove();
         
@@ -106,7 +108,7 @@ public class Buffer {
     
     void printBuffer() {
         String output = "[";
-        for(Character c : this.theBuffer) {
+        for(String c : this.theBuffer) {
             output += c + ", ";
         }
         output += "]";
