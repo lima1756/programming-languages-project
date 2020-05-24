@@ -6,18 +6,11 @@
 package producerconsumer;
 
 import java.util.ArrayList;
-
 public class Analyzer {
     private boolean result;
     
     public Analyzer(String operation){
         this.result = init(operation.trim());
-    }
-
-    public static void main(String[] args){
-        Analyzer anal = new Analyzer("(+ 2 (- 8 1) (* 1 1) 5 8 9)");
-
-        System.out.println(anal.result);
     }
     
     private static boolean init(String preorder){
