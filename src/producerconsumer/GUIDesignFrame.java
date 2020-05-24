@@ -1224,7 +1224,11 @@ public class GUIDesignFrame extends javax.swing.JFrame {
         if(server){
             System.out.println("Client mode ON");
             jToggleButton1.setText("Cliente");
-            btn_start.setLabel("Conectar");
+            if(connected) {
+                btn_start.setLabel("Detener");
+            } else {
+                btn_start.setLabel("Conectar");
+            }
             btn_menu_2.setVisible(false);
             btn_menu_3.setVisible(false);
             btn_menu_4.setVisible(false);
@@ -1241,11 +1245,13 @@ public class GUIDesignFrame extends javax.swing.JFrame {
             btn_menu_2.setVisible(true);
             btn_menu_3.setVisible(true);
             btn_menu_4.setVisible(true);
-            DefaultTableModel model = (DefaultTableModel) this.jTable3.getModel();
-            model.setRowCount(0);
-            this.sockets = appServer.getSockets();
-            for(int socket = 0; socket < this.sockets.length; socket++) {
-                model.addRow(new Object[]{this.sockets[socket].getInetAddress()});
+            if(appServer.getSockets().length > 0) {
+                DefaultTableModel model = (DefaultTableModel) this.jTable3.getModel();
+                model.setRowCount(0);
+                this.sockets = appServer.getSockets();
+                for(int socket = 0; socket < this.sockets.length; socket++) {
+                    model.addRow(new Object[]{this.sockets[socket].getInetAddress()});
+                }
             }
             startServer();
         }
