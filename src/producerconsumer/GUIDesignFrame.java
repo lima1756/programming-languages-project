@@ -1141,10 +1141,14 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
                 if(bCantidad > 0 && pCantidad > 0 && cCantidad > 0 && pEspera >= 0 && cEspera >= 0) {
                     jProgressBar2.setMaximum(bCantidad);
                     jProgressBar2.setValue(0);
-                    DefaultTableModel model1 = (DefaultTableModel) this.jTable1.getModel();
-                    model1.setRowCount(0);
-                    DefaultTableModel model2 = (DefaultTableModel) this.jTable2.getModel();
-                    model2.setRowCount(0);
+                    try{
+                        DefaultTableModel model1 = (DefaultTableModel) this.jTable1.getModel();
+                        model1.setRowCount(0);
+                        DefaultTableModel model2 = (DefaultTableModel) this.jTable2.getModel();
+                        model2.setRowCount(0);
+                    } catch(Exception e){
+                        System.out.println(e);
+                    }
                     labelTareasCompletadas.setText("0");
                     labelTareasPendientes.setText("0");
                     inputLock(spinners);
@@ -1250,11 +1254,16 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
             btn_menu_3.setVisible(true);
             btn_menu_4.setVisible(true);
             if(appServer.getSockets().length > 0) {
-                DefaultTableModel model = (DefaultTableModel) this.jTable3.getModel();
-                model.setRowCount(0);
-                this.sockets = appServer.getSockets();
-                for(int socket = 0; socket < this.sockets.length; socket++) {
-                    model.addRow(new Object[]{this.sockets[socket].getInetAddress()});
+                try{
+                    DefaultTableModel model = (DefaultTableModel) this.jTable3.getModel();
+                    model.setRowCount(0);
+                
+                    this.sockets = appServer.getSockets();
+                    for(int socket = 0; socket < this.sockets.length; socket++) {
+                        model.addRow(new Object[]{this.sockets[socket].getInetAddress()});
+                    }
+                } catch(Exception e){
+                    System.out.println(e);
                 }
             }
             startServer();
@@ -1491,19 +1500,22 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
     }
     
     private void updateDictionaryTable(){
-        DefaultTableModel model = (DefaultTableModel)jTable4.getModel();
-        DefaultComboBoxModel comboModel = (DefaultComboBoxModel)jComboBox1.getModel();
-        int currentSize = model.getRowCount();
-        for(int i = 0; i < currentSize; i++){
-            model.removeRow(0);
+        try{
+            DefaultTableModel model = (DefaultTableModel)jTable4.getModel();
+            DefaultComboBoxModel comboModel = (DefaultComboBoxModel)jComboBox1.getModel();
+            int currentSize = model.getRowCount();
+            for(int i = 0; i < currentSize; i++){
+                model.removeRow(0);
+            }
+            comboModel.removeAllElements();
+            for(int i = 0; i < dictionary.size(); i++){
+                Object[] data = {dictionary.get(i)};
+                model.addRow(data);   
+                if(i >= 4)
+                    comboModel.addElement(dictionary.get(i));
+            }
+        } catch(Exception e){
+            System.out.println(e);
         }
-        comboModel.removeAllElements();
-        for(int i = 0; i < dictionary.size(); i++){
-            Object[] data = {dictionary.get(i)};
-            model.addRow(data);   
-            if(i >= 4)
-                comboModel.addElement(dictionary.get(i));
-        }
-       
     }
 }

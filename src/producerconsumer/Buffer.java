@@ -73,8 +73,13 @@ public class Buffer {
         }
         
         this.addProduct(product);
-        DefaultTableModel model = (DefaultTableModel) gui.jTable1.getModel();
-        model.addRow(new Object[]{product});
+        try{
+            DefaultTableModel model = (DefaultTableModel) gui.jTable1.getModel();
+            model.addRow(new Object[]{product});
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
         gui.jProgressBar2.setValue(this.theBuffer.size());
         gui.labelTareasPendientes.setText(this.theBuffer.size() + "");
         this.printBuffer();

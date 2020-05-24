@@ -104,8 +104,12 @@ public class Connection extends Thread {
                             String idC = json.get("id").getAsString();
                             String answer = json.get("consumed").getAsString();
                             String operation = json.get("operation").getAsString();
-                            DefaultTableModel model2 = (DefaultTableModel) gui.jTable2.getModel();
-                            model2.addRow(new Object[]{operation, answer});
+                            try{
+                                DefaultTableModel model2 = (DefaultTableModel) gui.jTable2.getModel();
+                                model2.addRow(new Object[]{operation, answer});
+                            } catch(Exception e){
+                                System.out.println(e);
+                            }
                             //System.out.println("consumer " + socket.getInetAddress().toString() + " - " + idC + ": consumed: " + answer);
                             // TODO: add to consumed data
                             idleConsumers.add(new ServerConsumer(idC, socket));
