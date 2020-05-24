@@ -15,7 +15,13 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import producerconsumer.inputAnalysis.AnalyzerListener;
+import producerconsumer.inputAnalysis.Lexical;
+import producerconsumer.inputAnalysis.Syntactical;
+import producerconsumer.inputAnalysis.Token;
 import producerconsumer.network.client.Client;
 import producerconsumer.network.server.Server;
 
@@ -23,7 +29,7 @@ import producerconsumer.network.server.Server;
  *
  * @author luisi
  */
-public class GUIDesignFrame extends javax.swing.JFrame {
+public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListener{
     
     private int xWindowPosition, yWindowPosition;
     private boolean running = false;
@@ -32,6 +38,8 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     private Client client;
     private ArrayList<Producer> producers;
     private ArrayList<Consumer> consumers;
+    private String currentOp;
+    private final ArrayList<String> dictionary;
     private Socket[] sockets;
     private Server appServer;
 
@@ -56,13 +64,21 @@ public class GUIDesignFrame extends javax.swing.JFrame {
         } catch(UnknownHostException ex) {
             // TODO: notify user that there is a problem with the connection, try later
         }
+        producers = new ArrayList<>();
+        consumers = new ArrayList<>();
+        dictionary = new ArrayList<>();
+        dictionary.add("(+ _N _N)");
+        dictionary.add("(- _N _N)");
+        dictionary.add("(* _N _N)");
+        dictionary.add("(/ _N _N)"); 
+        updateDictionaryTable();
         this.producers = new ArrayList<>();
         this.consumers = new ArrayList<>();
         startServer();
     }
     
     private void startServer(){
-        appServer = new Server(this);
+        appServer = new Server(this, dictionary);
         appServer.listen();
         //Scanner keyboard = new Scanner(System.in);
     }
@@ -139,19 +155,17 @@ public class GUIDesignFrame extends javax.swing.JFrame {
         valoresInicial = new javax.swing.JSpinner();
         cardClientConfig = new javax.swing.JPanel();
         jLabel36 = new javax.swing.JLabel();
-        jLabel37 = new javax.swing.JLabel();
-        tf_alias = new javax.swing.JTextField();
         tf_server_ip = new javax.swing.JTextField();
         cardServerDict = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         jTable4 = new javax.swing.JTable();
         jLabel31 = new javax.swing.JLabel();
-        choice1 = new java.awt.Choice();
         jLabel32 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         jLabel33 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
         jButton2 = new javax.swing.JButton();
+        jComboBox1 = new javax.swing.JComboBox<>();
         cardServerClients = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTable3 = new javax.swing.JTable();
@@ -764,41 +778,25 @@ public class GUIDesignFrame extends javax.swing.JFrame {
         jLabel36.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jLabel36.setText("Direccion IP Servidor");
 
-        jLabel37.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
-        jLabel37.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel37.setText("Alias Cliente");
-
-        tf_alias.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tf_aliasActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout cardClientConfigLayout = new javax.swing.GroupLayout(cardClientConfig);
         cardClientConfig.setLayout(cardClientConfigLayout);
         cardClientConfigLayout.setHorizontalGroup(
             cardClientConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(cardClientConfigLayout.createSequentialGroup()
-                .addGap(42, 42, 42)
+                .addGap(130, 130, 130)
                 .addGroup(cardClientConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(tf_server_ip, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel37, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel36, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tf_alias, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(235, Short.MAX_VALUE))
+                    .addComponent(jLabel36, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(157, Short.MAX_VALUE))
         );
         cardClientConfigLayout.setVerticalGroup(
             cardClientConfigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(cardClientConfigLayout.createSequentialGroup()
-                .addGap(36, 36, 36)
-                .addComponent(jLabel37)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tf_alias, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addGap(128, 128, 128)
                 .addComponent(jLabel36)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tf_server_ip, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(211, Short.MAX_VALUE))
+                .addContainerGap(185, Short.MAX_VALUE))
         );
 
         cardPanel.add(cardClientConfig, "cardClientConfig");
@@ -816,7 +814,7 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                 {"(/ N M)"}
             },
             new String [] {
-                "Operaciones Guardadas"
+                "Operaciones"
             }
         ) {
             Class[] types = new Class [] {
@@ -827,6 +825,7 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                 return types [columnIndex];
             }
         });
+        jTable4.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jTable4.setSelectionBackground(new java.awt.Color(229, 225, 238));
         jScrollPane4.setViewportView(jTable4);
 
@@ -859,6 +858,8 @@ public class GUIDesignFrame extends javax.swing.JFrame {
             }
         });
 
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
         javax.swing.GroupLayout cardServerDictLayout = new javax.swing.GroupLayout(cardServerDict);
         cardServerDict.setLayout(cardServerDictLayout);
         cardServerDictLayout.setHorizontalGroup(
@@ -873,11 +874,11 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                             .addComponent(jLabel33)
                             .addGroup(cardServerDictLayout.createSequentialGroup()
                                 .addGroup(cardServerDictLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jTextField1)
                                     .addGroup(cardServerDictLayout.createSequentialGroup()
                                         .addComponent(jLabel32)
-                                        .addGap(0, 182, Short.MAX_VALUE))
-                                    .addComponent(jTextField1)
-                                    .addComponent(choice1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addGap(0, 0, Short.MAX_VALUE))
+                                    .addComponent(jComboBox1, 0, 236, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(cardServerDictLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jButton1)
@@ -904,7 +905,8 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                             .addGroup(cardServerDictLayout.createSequentialGroup()
                                 .addComponent(jLabel32)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(choice1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(4, 4, 4))))
                     .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 310, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(17, Short.MAX_VALUE))
         );
@@ -981,6 +983,7 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                 "Product"
             }
         ));
+        jTable1.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jTable1.setSelectionBackground(new java.awt.Color(229, 225, 238));
         jScrollPane1.setViewportView(jTable1);
 
@@ -992,6 +995,7 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                 "Product", "Result"
             }
         ));
+        jTable2.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jTable2.setSelectionBackground(new java.awt.Color(229, 225, 238));
         jScrollPane2.setViewportView(jTable2);
 
@@ -1148,13 +1152,13 @@ public class GUIDesignFrame extends javax.swing.JFrame {
                     setRunningValues();
                     
                     
-                    boolean hasClients = appServer.runServer(bCantidad, cCantidad, pCantidad, this);
+                    boolean hasClients = appServer.runServer(bCantidad, cCantidad, pCantidad, this, pEspera, cEspera, vInicial, vFinal);
                     
                     if(!hasClients) {
                         Buffer buffer = new Buffer(bCantidad, pEspera, cEspera, this);
 
                         for (int producers = 0; producers < pCantidad; producers++) {
-                            Producer producer = new Producer(buffer, pEspera);
+                            Producer producer = new Producer(buffer, pEspera, dictionary, vInicial, vFinal);
                             producer.start();
                             this.producers.add(producer);
                         }
@@ -1287,7 +1291,10 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_menu_4MousePressed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+        if(dictionary.size() > 4){
+            dictionary.remove(jComboBox1.getSelectedIndex()+4);
+            updateDictionaryTable();
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
@@ -1295,16 +1302,13 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        String preorder = jTextField1.getText().trim();
-        Analyzer anal = new Analyzer(preorder);
-        
-        if(anal.getResult() == true);
-        else jTextField1.setText("Invalid Format");
+        currentOp = jTextField1.getText().trim();
+        Lexical l = Lexical.getInstance();
+        Syntactical s = Syntactical.getInstance(this);
+        l.prepare(currentOp, s.getStream());
+        new Thread(s).start();
+        new Thread(l).start();
     }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void tf_aliasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tf_aliasActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tf_aliasActionPerformed
 
     
     
@@ -1397,7 +1401,6 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     private javax.swing.JPanel cardServerConfig;
     private javax.swing.JPanel cardServerDict;
     private javax.swing.JPanel cardServerProcess;
-    private java.awt.Choice choice1;
     private javax.swing.JSpinner consumidorCantidad;
     private javax.swing.JSpinner consumidorEspera;
     private javax.swing.JPanel ind_1;
@@ -1406,6 +1409,7 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     private javax.swing.JPanel ind_4;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1433,7 +1437,6 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel32;
     private javax.swing.JLabel jLabel33;
     private javax.swing.JLabel jLabel36;
-    private javax.swing.JLabel jLabel37;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -1469,9 +1472,38 @@ public class GUIDesignFrame extends javax.swing.JFrame {
     private javax.swing.JPanel panelRunningValues;
     private javax.swing.JSpinner productorCantidad;
     private javax.swing.JSpinner productorEspera;
-    private javax.swing.JTextField tf_alias;
     private javax.swing.JTextField tf_server_ip;
     private javax.swing.JSpinner valoresFinal;
     private javax.swing.JSpinner valoresInicial;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void passedAnalyzer() {
+        dictionary.add(currentOp);
+        updateDictionaryTable();
+        currentOp = "";
+        jTextField1.setText("");
+    }
+
+    @Override
+    public void errorAnalyzer(Token token) {
+        JOptionPane.showMessageDialog(null, "ERROR on token: " + token.getData());
+    }
+    
+    private void updateDictionaryTable(){
+        DefaultTableModel model = (DefaultTableModel)jTable4.getModel();
+        DefaultComboBoxModel comboModel = (DefaultComboBoxModel)jComboBox1.getModel();
+        int currentSize = model.getRowCount();
+        for(int i = 0; i < currentSize; i++){
+            model.removeRow(0);
+        }
+        comboModel.removeAllElements();
+        for(int i = 0; i < dictionary.size(); i++){
+            Object[] data = {dictionary.get(i)};
+            model.addRow(data);   
+            if(i >= 4)
+                comboModel.addElement(dictionary.get(i));
+        }
+       
+    }
 }

@@ -11,10 +11,11 @@ import javax.swing.table.DefaultTableModel;
 public class Buffer {
     
     //private char buffer = 0;
-    public Queue<Character> theBuffer;
+    public Queue<String> theBuffer;
     private int size, completadas;
     private int productorEspera, consumidorEspera;
     private GUIDesignFrame gui;
+    Evaluator ev = new Evaluator();
     
     Buffer(int size, int productorEspera, int consumidorEspera, GUIDesignFrame gui) {
         this.size = size;
@@ -25,39 +26,49 @@ public class Buffer {
         this.theBuffer = new LinkedList<>();
     }
     
-    synchronized char consume() {
-        char product = 0;
+    synchronized String consume() {
+        String product = "";
         
         while(this.theBuffer.isEmpty()) {
             try {
                 wait(this.productorEspera);
             } catch (InterruptedException ex) {
-                Logger.getLogger(Buffer.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println(ex);
             }
         }
         
         product = this.retrieveProduct();
         this.completadas++;
-        DefaultTableModel model1 = (DefaultTableModel) gui.jTable1.getModel();
-        model1.removeRow(0);
+        try{
+            DefaultTableModel model1 = (DefaultTableModel) gui.jTable1.getModel();
+            model1.removeRow(0);
+        } catch (Exception e){
+            System.out.println(e);
+        }
         gui.labelTareasPendientes.setText(this.theBuffer.size() + "");
-        DefaultTableModel model2 = (DefaultTableModel) gui.jTable2.getModel();
-        model2.addRow(new Object[]{product, "Test"});
+        
+        String output = ev.eval(product);
+        try{
+            DefaultTableModel model2 = (DefaultTableModel) gui.jTable2.getModel();
+            model2.addRow(new Object[]{product, output});
+        } catch (Exception e){
+            System.out.println(e);
+        }
         gui.jProgressBar2.setValue(this.theBuffer.size());
         gui.labelTareasCompletadas.setText(this.completadas + "");
         this.printBuffer();
         notify();
         
-        return product;
+        return product+" = "+output;
     }
     
-    synchronized void produce(char product) {
+    synchronized void produce(String product) {
         
         while(bufferIsFull()) {
             try {
                 wait(this.consumidorEspera);
             } catch (InterruptedException ex) {
-                Logger.getLogger(Buffer.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println(ex);
             }
         }
         
@@ -80,7 +91,7 @@ public class Buffer {
         return this.theBuffer.size() >= this.size;
     }
     
-    Character addProduct(char product) {
+    String addProduct(String product) {
         if(this.theBuffer.size() < this.size) {
             
             this.theBuffer.add(product);
@@ -89,7 +100,7 @@ public class Buffer {
         return null;
     }
     
-    Character retrieveProduct() {
+    String retrieveProduct() {
         if(!this.theBuffer.isEmpty())
             return this.theBuffer.remove();
         
@@ -98,7 +109,7 @@ public class Buffer {
     
     void printBuffer() {
         String output = "[";
-        for(Character c : this.theBuffer) {
+        for(String c : this.theBuffer) {
             output += c + ", ";
         }
         output += "]";

@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.BlockingQueue;
 
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import producerconsumer.GUIDesignFrame;
@@ -22,23 +22,25 @@ public class Server {
     private Semaphore semaphore;
     private boolean running;
     private GUIDesignFrame gui;
+    private ArrayList<String> dictionary;
     
-	private final BlockingQueue<ServerProducer> idleProducers;
-	private final BlockingQueue<ServerConsumer> idleConsumers;
+    private final BlockingQueue<ServerProducer> idleProducers;
+    private final BlockingQueue<ServerConsumer> idleConsumers;
 
-	public Server(GUIDesignFrame gui) {
-            this.gui = gui;
-            socketsMap = new ConcurrentHashMap<>();
-            idleProducers = new LinkedBlockingQueue<>();
-            idleConsumers = new LinkedBlockingQueue<>();
-            try
-            {
-                serverSocket = new ServerSocket(8081);
-            }
-            catch(IOException e)
-            {
-                System.out.println(e.getMessage());
-            }
+    public Server(GUIDesignFrame gui, ArrayList<String> dictionary) {
+        this.gui = gui;
+        socketsMap = new ConcurrentHashMap<>();
+        idleProducers = new LinkedBlockingQueue<>();
+        idleConsumers = new LinkedBlockingQueue<>();
+        try
+        {
+            serverSocket = new ServerSocket(8081);
+        }
+        catch(IOException e)
+        {
+            System.out.println(e.getMessage());
+        }
+        this.dictionary = dictionary;
     }
     
     public void listen(){
@@ -60,18 +62,21 @@ public class Server {
                 {
                     System.out.println(e.getMessage());
                 }
+                catch(NullPointerException e){
+                    System.out.println("Server closed");
+                }
             }
             
         }.start();
     }
 
-    public void run(int bufferSize, int consumers, int producers, GUIDesignFrame gui){
+    public void run(int bufferSize, int consumers, int producers, GUIDesignFrame gui, int producerWait, int consumerWait, int min, int max){
         this.buffer = new ServerBuffer(bufferSize, gui);
         semaphore = new Semaphore(bufferSize);
         running = true;
         
         socketsMap.values().forEach((socket) -> {
-            new Connection(socket, socketsMap, idleProducers, idleConsumers, consumers, producers, buffer).start();
+            new Connection(socket, socketsMap, idleProducers, idleConsumers, consumers, producers, buffer, producerWait, consumerWait, min, max, dictionary, gui).start();
         }); 
         
         //check for socketsMap size. If empty, then start offline mode
@@ -125,10 +130,10 @@ public class Server {
            
     }
     
-    public boolean runServer(int bufferSize, int consumers, int producers, GUIDesignFrame gui) {
+    public boolean runServer(int bufferSize, int consumers, int producers, GUIDesignFrame gui, int producerWait, int consumerWait, int min, int max) {
         if(!this.socketsMap.isEmpty()){
             running = true;
-            run(bufferSize, consumers, producers, gui);
+            run(bufferSize, consumers, producers, gui, producerWait, consumerWait, min, max);
             return true;
         }
         return false;
@@ -137,12 +142,14 @@ public class Server {
     
     public void stop() {
         try {
-            serverSocket.close();
+            if(serverSocket != null){
+                serverSocket.close();
+            }
             running = false;
             
             //return true;
         } catch (IOException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex);
         }
         
         //return false;

@@ -27,11 +27,11 @@ public class Evaluator {
     
     public Evaluator(){
         if(!(this.schemeWorks = this.runScheme())){
-            JOptionPane.showMessageDialog(null, "Scheme no ha podido iniciarse, se usará kawa");
+            //JOptionPane.showMessageDialog(null, "Scheme no ha podido iniciarse, se usará kawa");
             this.scm = new Scheme();
-            System.out.println("-Evaluator: I'm using Kawa");
+            //System.out.println("-Evaluator: I'm using Kawa");
         }
-        else System.out.println("-Evaluator: Scheme is running");
+        //else System.out.println("-Evaluator: Scheme is running");
         
     }
     public String eval(String s){
@@ -90,7 +90,7 @@ public class Evaluator {
             stdOutput = new BufferedWriter(new OutputStreamWriter(scheme.getOutputStream()));
         }
         catch(Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
             return false;
         }
         return true;

@@ -13,7 +13,7 @@ public class ProducerConsumer {
                 }
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(GUIDesignFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            System.out.println(ex);
         }
         //</editor-fold>
         
