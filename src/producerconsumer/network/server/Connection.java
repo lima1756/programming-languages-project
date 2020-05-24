@@ -29,16 +29,19 @@ public class Connection extends Thread {
     private int consumers;
     private int producers;
     private ServerBuffer buffer;
+    private int waitConsumers, waitProducers;
 
     public Connection(Socket socket, ConcurrentHashMap<InetAddress, Socket> socketsMap,
             BlockingQueue<ServerProducer> idleProducers, BlockingQueue<ServerConsumer> idleConsumers,
-            int consumers, int producers, ServerBuffer buffer) {
+            int consumers, int producers, ServerBuffer buffer, int waitProducers, int waitConsumers) {
         this.socket = socket;
         this.socketsMap = socketsMap;
         this.idleProducers = idleProducers;
         this.idleConsumers = idleConsumers;
         this.consumers = consumers;
         this.producers = producers;
+        this.waitProducers = waitProducers;
+        this.waitConsumers = waitConsumers;
         this.buffer = buffer;
     }
 
@@ -50,6 +53,8 @@ public class Connection extends Thread {
         json.add("action", new JsonPrimitive("CONFIG"));
         json.add("producers", new JsonPrimitive(this.producers));
         json.add("consumers", new JsonPrimitive(this.consumers));
+        json.add("waitProducers", new JsonPrimitive(this.consumers));
+        json.add("waitConsumers", new JsonPrimitive(this.consumers));
         try {
             MessageManager.sendMessage(json, socket);
             while (socket.isConnected() && !socket.isClosed()) {

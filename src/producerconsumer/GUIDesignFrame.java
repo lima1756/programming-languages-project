@@ -1152,7 +1152,7 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
                     setRunningValues();
                     
                     
-                    boolean hasClients = appServer.runServer(bCantidad, cCantidad, pCantidad, this);
+                    boolean hasClients = appServer.runServer(bCantidad, cCantidad, pCantidad, this, pEspera, cEspera);
                     
                     if(!hasClients) {
                         Buffer buffer = new Buffer(bCantidad, pEspera, cEspera, this);

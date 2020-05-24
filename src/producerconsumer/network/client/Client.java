@@ -21,6 +21,8 @@ public class Client extends Thread{
     private int consumers;
     private int producers;
     private boolean alive;
+    private int producerWait;
+    private int consumerWait;
     
     public Client(String IP){
         try{
@@ -50,30 +52,15 @@ public class Client extends Thread{
                             action = json.get("action").getAsString();
                             switch (ActionSignals.valueof(action)) {
                                 case PRODUCE:
-                                    String id = json.get("id").getAsString();
-                                    System.out.println("producer produced: " + json);
-                                    json = new JsonObject();
-                                    json.add("action", new JsonPrimitive(ActionSignals.PRODUCED.toString()));
-                                    // TODO: change to real operation
-                                    json.add("produced", new JsonPrimitive("(+ "+ new Random().nextInt()+" 1)"));
-                                    json.add("id", new JsonPrimitive(id));
-                                    System.out.println("producer produced: " + json);
-                                    MessageManager.sendMessage(json, socket);
+                                    new ClientProducer(json, producerWait, socket).start();
                                     break;
                                 case CONSUME:
-                                    String idC = json.get("id").getAsString();
-                                    String operation = json.get("consume").getAsString();
-                                    json = new JsonObject();
-                                    json.add("action", new JsonPrimitive(ActionSignals.CONSUMED.toString()));
-                                    // TODO: change use operation to obtain the real answer
-                                    json.add("consumed", new JsonPrimitive(((Integer) new Random().nextInt()).toString()));
-                                    json.add("id", new JsonPrimitive(idC));
-                                    MessageManager.sendMessage(json, socket);
+                                    new ClientConsumer(json, consumerWait, socket).start();
                                     break;
                             }
                         } catch(IOException e) {
                             System.out.println(e);
-                        }
+                        } 
                     }
                 }
             }).start();
@@ -81,6 +68,8 @@ public class Client extends Thread{
                 System.out.println("entered client config");
                 consumers = json.get("consumers").getAsInt();
                 producers = json.get("producers").getAsInt();
+                producerWait = json.get("waitProducers").getAsInt();
+                consumerWait = json.get("waitConsumers").getAsInt();
                 for(Integer i = 0; i < consumers; i++){
                     json = new JsonObject();
                     json.add("action", new JsonPrimitive(ActionSignals.CONSUMER_OK.toString()));

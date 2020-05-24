@@ -68,13 +68,13 @@ public class Server {
         }.start();
     }
 
-    public void run(int bufferSize, int consumers, int producers, GUIDesignFrame gui){
+    public void run(int bufferSize, int consumers, int producers, GUIDesignFrame gui, int producerWait, int consumerWait){
         this.buffer = new ServerBuffer(bufferSize, gui);
         semaphore = new Semaphore(bufferSize);
         running = true;
         
         socketsMap.values().forEach((socket) -> {
-            new Connection(socket, socketsMap, idleProducers, idleConsumers, consumers, producers, buffer).start();
+            new Connection(socket, socketsMap, idleProducers, idleConsumers, consumers, producers, buffer, producerWait, consumerWait).start();
         }); 
         
         //check for socketsMap size. If empty, then start offline mode
@@ -128,10 +128,10 @@ public class Server {
            
     }
     
-    public boolean runServer(int bufferSize, int consumers, int producers, GUIDesignFrame gui) {
+    public boolean runServer(int bufferSize, int consumers, int producers, GUIDesignFrame gui, int producerWait, int consumerWait) {
         if(!this.socketsMap.isEmpty()){
             running = true;
-            run(bufferSize, consumers, producers, gui);
+            run(bufferSize, consumers, producers, gui, producerWait, consumerWait);
             return true;
         }
         return false;
