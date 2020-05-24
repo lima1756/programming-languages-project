@@ -13,6 +13,12 @@ public class Analyzer {
     public Analyzer(String operation){
         this.result = init(operation.trim());
     }
+
+    public static void main(String[] args){
+        Analyzer anal = new Analyzer("(+ 2 (- 8 1) (* 1 1) 5 8 9)");
+
+        System.out.println(anal.result);
+    }
     
     private static boolean init(String preorder){
         if(preorder.charAt(0) == '(' && 
@@ -51,8 +57,7 @@ public class Analyzer {
         
         ArrayList<Integer> indexesToRemove = new ArrayList<>();
 
-        if(operator(split[1].trim())){
-            for(int i=2; i<split.length; i++){
+        for(int i=2; i<split.length; i++){
                 if(checkForMissingOperator(split[i].trim())){
                     //System.out.println("Antes: "+split[1]);
                     split[1] += split[i].trim()+" ";
@@ -60,7 +65,7 @@ public class Analyzer {
                     //System.out.println("Despues: "+split[1]+"\n");
                     //System.out.println();
                 }
-            }
+            
         }
 
         ArrayList<String> newSplit = new ArrayList<>();
