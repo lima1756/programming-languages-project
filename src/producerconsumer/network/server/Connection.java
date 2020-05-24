@@ -14,9 +14,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonParseException;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.table.DefaultTableModel;
+import producerconsumer.GUIDesignFrame;
 import producerconsumer.network.ActionSignals;
 import producerconsumer.network.MessageManager;
 
@@ -29,11 +32,15 @@ public class Connection extends Thread {
     private int consumers;
     private int producers;
     private ServerBuffer buffer;
-    private int waitConsumers, waitProducers;
+    private int waitConsumers, waitProducers, min, max;
+    private ArrayList<String> dictionary;
+    private GUIDesignFrame gui;
+    private ArrayList<ServerProducer> tempProducers;
 
     public Connection(Socket socket, ConcurrentHashMap<InetAddress, Socket> socketsMap,
             BlockingQueue<ServerProducer> idleProducers, BlockingQueue<ServerConsumer> idleConsumers,
-            int consumers, int producers, ServerBuffer buffer, int waitProducers, int waitConsumers) {
+            int consumers, int producers, ServerBuffer buffer, int waitProducers, int waitConsumers,
+            int min, int max, ArrayList<String> dictionary, GUIDesignFrame gui) {
         this.socket = socket;
         this.socketsMap = socketsMap;
         this.idleProducers = idleProducers;
@@ -43,6 +50,11 @@ public class Connection extends Thread {
         this.waitProducers = waitProducers;
         this.waitConsumers = waitConsumers;
         this.buffer = buffer;
+        this.min = min;
+        this.max = max;
+        this.dictionary = dictionary;
+        this.gui = gui;
+        this.tempProducers = new ArrayList<>();
     }
 
     @Override
@@ -55,6 +67,8 @@ public class Connection extends Thread {
         json.add("consumers", new JsonPrimitive(this.consumers));
         json.add("waitProducers", new JsonPrimitive(this.consumers));
         json.add("waitConsumers", new JsonPrimitive(this.consumers));
+        json.add("min", new JsonPrimitive(this.min));
+        json.add("max", new JsonPrimitive(this.max));
         try {
             MessageManager.sendMessage(json, socket);
             while (socket.isConnected() && !socket.isClosed()) {
@@ -64,7 +78,14 @@ public class Connection extends Thread {
                     System.out.println(action);
                     switch (ActionSignals.valueof(action)) {
                         case PRODUCER_OK:
-                            idleProducers.add(new ServerProducer(json.get("id").getAsString(), socket));
+                            tempProducers.add(new ServerProducer(json.get("id").getAsString(), socket, dictionary));
+                            if(tempProducers.size() == producers){
+                                while(tempProducers.size()>0){
+                                    idleProducers.add(tempProducers.get(0));
+                                    tempProducers.remove(0);
+                                }
+                            }
+                            
                             break;
                         case CONSUMER_OK:
                             idleConsumers.add(new ServerConsumer(json.get("id").getAsString(), socket));
@@ -72,10 +93,14 @@ public class Connection extends Thread {
                         case PRODUCED:
                             String product = json.get("produced").getAsString();
                             String idP = json.get("id").getAsString();
+                            String operation = json.get("operation").getAsString();
                             System.out.println("producer "+ socket.getInetAddress().toString() + " - " + idP + ": produced: " + product);
-                            // TODO: add to produced data
+                            
+                            DefaultTableModel model2 = (DefaultTableModel) gui.jTable2.getModel();
+                            model2.addRow(new Object[]{operation, product});
+                            
                             buffer.produce(product);
-                            idleProducers.add(new ServerProducer(idP, socket));
+                            idleProducers.add(new ServerProducer(idP, socket, dictionary));
                             break;
                         case CONSUMED:
                             String idC = json.get("id").getAsString();
@@ -93,7 +118,7 @@ public class Connection extends Thread {
                 } catch (JsonParseException ex) {
                     System.out.println(ex.getMessage());
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
+                    System.out.println(ex);
                 }
             }
         } catch (NullPointerException ex) {

@@ -12,6 +12,7 @@ import java.net.Socket;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import producerconsumer.Evaluator;
 import producerconsumer.network.ActionSignals;
 import producerconsumer.network.MessageManager;
 
@@ -37,8 +38,10 @@ public class ClientConsumer extends Thread{
         String operation = json.get("consume").getAsString();
         json = new JsonObject();
         json.add("action", new JsonPrimitive(ActionSignals.CONSUMED.toString()));
-        // TODO: change use operation to obtain the real answer
-        json.add("consumed", new JsonPrimitive(((Integer) new Random().nextInt()).toString()));
+        Evaluator ev = new Evaluator();
+        String output = ev.eval(operation);
+        json.add("operation", new JsonPrimitive(operation));
+        json.add("consumed", new JsonPrimitive(output));
         json.add("id", new JsonPrimitive(idC));
         try{
             Thread.sleep(wait);
@@ -48,7 +51,7 @@ public class ClientConsumer extends Thread{
         try {
             MessageManager.sendMessage(json, socket);
         } catch (IOException ex) {
-            Logger.getLogger(ClientConsumer.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex);
         }
     }
     

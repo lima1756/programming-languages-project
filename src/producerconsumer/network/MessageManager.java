@@ -41,7 +41,7 @@ public class MessageManager {
 
             int c;
             StringBuilder response = new StringBuilder();
-            while ((c = in.read()) != 0) {
+            while ((c = in.read()) > 0) {
                 response.append((char) c);
             }
             

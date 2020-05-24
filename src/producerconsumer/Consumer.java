@@ -30,7 +30,7 @@ public class Consumer extends Thread {
             try {
                 Thread.sleep(this.consumidorEspera);
             } catch (InterruptedException ex) {
-                Logger.getLogger(Producer.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println(ex);
             }
         }
     }

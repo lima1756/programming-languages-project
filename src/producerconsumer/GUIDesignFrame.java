@@ -78,7 +78,7 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
     }
     
     private void startServer(){
-        appServer = new Server(this);
+        appServer = new Server(this, dictionary);
         appServer.listen();
         //Scanner keyboard = new Scanner(System.in);
     }
@@ -1152,7 +1152,7 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
                     setRunningValues();
                     
                     
-                    boolean hasClients = appServer.runServer(bCantidad, cCantidad, pCantidad, this, pEspera, cEspera);
+                    boolean hasClients = appServer.runServer(bCantidad, cCantidad, pCantidad, this, pEspera, cEspera, vInicial, vFinal);
                     
                     if(!hasClients) {
                         Buffer buffer = new Buffer(bCantidad, pEspera, cEspera, this);

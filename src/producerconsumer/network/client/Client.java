@@ -23,6 +23,7 @@ public class Client extends Thread{
     private boolean alive;
     private int producerWait;
     private int consumerWait;
+    private int min, max;
     
     public Client(String IP){
         try{
@@ -41,35 +42,39 @@ public class Client extends Thread{
         try{
             JsonObject json = MessageManager.readMessage(socket);
             String action = json.get("action").getAsString();
-            new Thread(new Runnable(){
-                @Override
-                public void run(){
-                    JsonObject json;
-                    String action;
-                    while(alive) {
-                        try{
-                            json = MessageManager.readMessage(socket);
-                            action = json.get("action").getAsString();
-                            switch (ActionSignals.valueof(action)) {
-                                case PRODUCE:
-                                    new ClientProducer(json, producerWait, socket).start();
-                                    break;
-                                case CONSUME:
-                                    new ClientConsumer(json, consumerWait, socket).start();
-                                    break;
-                            }
-                        } catch(IOException e) {
-                            System.out.println(e);
-                        } 
-                    }
-                }
-            }).start();
             if(action.equals(ActionSignals.CONFIG.toString())){
                 System.out.println("entered client config");
                 consumers = json.get("consumers").getAsInt();
                 producers = json.get("producers").getAsInt();
                 producerWait = json.get("waitProducers").getAsInt();
                 consumerWait = json.get("waitConsumers").getAsInt();
+                min = json.get("min").getAsInt();
+                max = json.get("max").getAsInt();
+                new Thread(new Runnable(){
+                    @Override
+                    public void run(){
+                        JsonObject json;
+                        String action;
+                        while(alive) {
+                            try{
+                                json = MessageManager.readMessage(socket);
+                                action = json.get("action").getAsString();
+                                switch (ActionSignals.valueof(action)) {
+                                    case PRODUCE:
+                                        new ClientProducer(json, producerWait, socket, min, max).start();
+                                        break;
+                                    case CONSUME:
+                                        new ClientConsumer(json, consumerWait, socket).start();
+                                        break;
+                                }
+                            } catch(IOException e) {
+                                System.out.println(e);
+                            } catch(ClassCastException ex){
+                                System.out.println(ex);
+                            }
+                        } 
+                    }
+                }).start();
                 for(Integer i = 0; i < consumers; i++){
                     json = new JsonObject();
                     json.add("action", new JsonPrimitive(ActionSignals.CONSUMER_OK.toString()));
@@ -78,7 +83,7 @@ public class Client extends Thread{
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                        System.out.println( ex);
                     }
                 }
                 for(Integer i = 0; i < producers; i++){
@@ -89,7 +94,7 @@ public class Client extends Thread{
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+                        System.out.println(ex);
                     }
                 }
             }

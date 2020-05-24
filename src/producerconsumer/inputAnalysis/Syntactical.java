@@ -61,7 +61,7 @@ public class Syntactical implements Runnable {
                 sendError(token);
             }
         } catch (InterruptedException ex) {
-            Logger.getLogger(Syntactical.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex);
         }
         if(error){
             System.out.println("Error");

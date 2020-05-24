@@ -24,21 +24,27 @@ public class ClientProducer extends Thread{
     JsonObject json;
     int wait;
     Socket socket;
+    int min, max;
     
-    public ClientProducer(JsonObject json, int wait, Socket socket){
+    public ClientProducer(JsonObject json, int wait, Socket socket, int min, int max){
         this.json = json;
         this.wait = wait;
         this.socket = socket;
+        this.min = min;
+        this.max = max;
     }
     
     @Override
     public void run(){
         String id = json.get("id").getAsString();
         System.out.println("producer produced: " + json);
+        String operation = json.get("raw_op").getAsString();
+        while(operation.contains("_N")){
+            operation = operation.replaceFirst("_N", ((Integer)(min + new Random().nextInt(max-min))).toString());
+        }
         json = new JsonObject();
         json.add("action", new JsonPrimitive(ActionSignals.PRODUCED.toString()));
-        // TODO: change to real operation
-        json.add("produced", new JsonPrimitive("(+ "+ new Random().nextInt()+" 1)"));
+        json.add("produced", new JsonPrimitive(operation));
         json.add("id", new JsonPrimitive(id));
         System.out.println("producer produced: " + json);
         try{
@@ -49,7 +55,7 @@ public class ClientProducer extends Thread{
         try {
             MessageManager.sendMessage(json, socket);
         } catch (IOException ex) {
-            Logger.getLogger(ClientProducer.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex);
         }
     }
 }

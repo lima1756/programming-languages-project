@@ -22,14 +22,9 @@ public class ServerBuffer {
         DefaultTableModel model1 = (DefaultTableModel) gui.jTable1.getModel();
         String toReturn = buffer.take();
         try {
-            System.out.println("Before consuming: " + model1.getRowCount());
-            System.out.println("Buffer consuming: " + buffer.size());
             model1.removeRow(0);
-            System.out.println("After consuming: " + model1.getRowCount());
             this.completadas++;
             gui.labelTareasPendientes.setText(this.buffer.size() + "");
-            DefaultTableModel model2 = (DefaultTableModel) gui.jTable2.getModel();
-            model2.addRow(new Object[]{toReturn, "Test"});
             gui.jProgressBar2.setValue(this.buffer.size());
             gui.labelTareasCompletadas.setText(this.completadas + "");
         } catch(Exception e){

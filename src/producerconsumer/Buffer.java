@@ -32,7 +32,7 @@ public class Buffer {
             try {
                 wait(this.productorEspera);
             } catch (InterruptedException ex) {
-                Logger.getLogger(Buffer.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println(ex);
             }
         }
         
@@ -67,7 +67,7 @@ public class Buffer {
             try {
                 wait(this.consumidorEspera);
             } catch (InterruptedException ex) {
-                Logger.getLogger(Buffer.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println(ex);
             }
         }
         
