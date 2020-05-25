@@ -29,5 +29,4 @@ public class ServerProducer {
         json.add("raw_op", new JsonPrimitive(dictionary.get(new Random(System.currentTimeMillis()).nextInt(dictionary.size()))));
         MessageManager.sendMessage(json, socket);
     }
-    
 }

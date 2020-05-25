@@ -1222,7 +1222,7 @@ public class GUIDesignFrame extends javax.swing.JFrame implements AnalyzerListen
                 System.out.println("Connecting to server uwu");
                 btn_start.setLabel("Detener");
                 this.client = new Client(this.tf_server_ip.getText());
-                this.client.run();
+                this.client.start();
             }
             connected = !connected;
         }

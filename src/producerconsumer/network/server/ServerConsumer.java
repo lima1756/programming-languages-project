@@ -24,6 +24,4 @@ public class ServerConsumer {
         json.add("id", new JsonPrimitive(this.id));
         MessageManager.sendMessage(json, socket);
     }
-
-
 }

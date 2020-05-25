@@ -105,12 +105,4 @@ public class Client extends Thread{
     public void kill(){
         this.alive = false;
     }
-    
-    public static void main(String[] args) {
-        Client c = new Client("192.168.1.65");
-        c.run();
-    }
-    
-    
-    
 }
